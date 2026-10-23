@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Injury Tracker | Sidelined FC</title>
+<meta name="description" content="Premier League, Championship, League One and League Two injuries with a severity score, an impact calculator, injury-prone points and the league table. Independent fan project.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23fff' stroke='%2314201b' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='15' fill='%23e5484d'/%3E%3Cpath d='M32 23v18M23 32h18' stroke='%23fff' stroke-width='6'/%3E%3C/svg%3E">
 <style>
 :root{--g:#2f9e5b;--gsvg:%232f9e5b;--bg:#f1f4f2;--card:#fff;--fg:#14201b;--mut:#5d6f67;--line:#dbe4df;--a:#c6f23a;--b:#b9a2f0;--ink:#1a2410;--soft:#eef3f0}
 @media(prefers-color-scheme:dark){:root{--g:#5fd68a;--gsvg:%235fd68a;--bg:#0e1311;--card:#171e1b;--fg:#eef3f0;--mut:#9aaba3;--line:#27312d;--soft:#1d2622}}
@@ -84,13 +86,60 @@ select{-webkit-appearance:none;appearance:none;padding-right:40px;background-rep
 .tabs button{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
 .tabs button[aria-selected=true]{background:var(--g);border-color:var(--g);color:var(--ink)}
 footer{margin:22px 4px 0;font-size:12px;color:var(--mut)}footer p{margin:0 0 8px}
-@media(prefers-reduced-motion:reduce){.bar i,.chev{transition:none}h1{animation:none;background:none;-webkit-text-fill-color:currentColor}}
+
+.views{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0 4px;margin:0 0 10px}
+.views .tabs{margin:0}
+input[type=range]{min-height:0;padding:0;border:0;background:transparent;accent-color:var(--g);margin-top:8px}
+input[type=checkbox]{width:20px;min-height:0;height:20px;margin:0;accent-color:var(--g)}
+.f{margin:0 0 12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kval{float:right;font-weight:600;color:var(--fg)}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--fg);margin:0 0 12px;min-height:44px;align-self:end}
+.kres .kwho{margin:10px 0 0;color:var(--mut);font-size:13px}
+.kpill{display:inline-block;border-radius:99px;padding:2px 12px;font-size:12px;font-weight:700;color:var(--ink)}
+.ktop{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.kbig{font-size:clamp(28px,7vw,40px);font-weight:650;letter-spacing:-.03em;line-height:1.1;margin:8px 0 0}
+.ksum{margin:6px 0 0;color:var(--mut);font-size:13px}
+.kscore{width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:30px;line-height:1;color:var(--ink);flex:none}
+.kscore small{font-size:9px;font-weight:600;letter-spacing:.03em;margin-top:3px}
+.kstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kstats div{background:var(--soft);border-radius:16px;padding:10px 12px}
+.kstats b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.kstats span{font-size:11px;color:var(--mut)}
+.kbar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:14px}.kbar i{display:block;height:100%;border-radius:99px;transition:width .25s}
+.kcap{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:4px}
+.krow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.krow .d{color:var(--mut);text-align:right}.kout{font-size:11px;font-weight:700;border-radius:99px;padding:1px 9px;background:var(--b);color:var(--ink);white-space:nowrap;align-self:center}
+.kh{font-size:13px;font-weight:650;margin:16px 0 2px}
+.knote{font-size:12px;color:var(--mut);margin:10px 0 0}
+.kscale{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:4px}
+.tbl{overflow-x:auto;border-radius:16px;border:1px solid var(--line)}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th,.tbl td{padding:9px 8px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl th{background:var(--soft);color:var(--mut);font-size:11px;font-weight:600}
+.tbl td{border-top:1px solid var(--line)}
+.tbl th:nth-child(2),.tbl td:nth-child(2){text-align:left;width:100%}
+.tbl td:first-child{text-align:center;border-left:5px solid transparent;color:var(--mut)}
+.tbl tr.top td:first-child{border-left-color:var(--g)}.tbl tr.bot td:first-child{border-left-color:#e5484d}
+.tbl tr.on td{background:color-mix(in oklch,var(--a) 28%,transparent);font-weight:650}
+.tbl td:nth-child(9){font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;margin-top:10px;color:var(--mut)}
+.key span::before{content:"";display:inline-block;width:5px;height:14px;margin-right:6px;vertical-align:-2px;background:var(--c)}
+.grp{border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden;background:var(--soft)}
+.grp h3{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:0;padding:8px 14px;color:var(--ink);background:var(--c)}
+.grp button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;font:inherit;font-size:13px;padding:11px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;touch-action:manipulation}
+.grp button:hover{background:var(--card)}.grp em{font-style:normal;color:var(--mut);white-space:nowrap}
+.g-short{--c:var(--a)}.g-mid{--c:#f2b84b}.g-long{--c:#ff6a3d}
+.grps{display:grid;gap:10px}@media(min-width:900px){.grps{grid-template-columns:repeat(3,1fr)}.grps .grp{margin:0}}
+.use{margin:10px 0 0;font:inherit;font-weight:700;font-size:13px;padding:10px 14px;border-radius:12px;border:0;background:var(--g);color:var(--ink);cursor:pointer}
+.lgtag{font-size:10px;font-weight:700;border-radius:99px;padding:0 7px;margin-left:4px;border:1px solid var(--line);color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.bar i,.chev,.kbar i{transition:none}h1{animation:none;background:none;-webkit-text-fill-color:currentColor}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="brand"><svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Football with a red cross"><defs><clipPath id="bc"><circle cx="32" cy="32" r="28"/></clipPath></defs><circle cx="32" cy="32" r="28" fill="#fff"/><g clip-path="url(#bc)"><line x1="32.0" y1="23.0" x2="32.0" y2="11.0" stroke="#14201b" stroke-width="2.2"/><polygon points="32.0,11.0 22.5,4.1 26.1,-7.1 37.9,-7.1 41.5,4.1" fill="#14201b"/><line x1="44.9" y1="14.2" x2="49.6" y2="7.7" stroke="#14201b" stroke-width="2.2"/><line x1="32.0" y1="11.0" x2="44.9" y2="14.2" stroke="#14201b" stroke-width="2.2"/><line x1="44.9" y1="14.2" x2="52.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><line x1="40.6" y1="29.2" x2="52.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><polygon points="52.0,25.5 55.6,14.3 67.4,14.3 71.0,25.5 61.5,32.4" fill="#14201b"/><line x1="52.9" y1="38.8" x2="60.5" y2="41.3" stroke="#14201b" stroke-width="2.2"/><line x1="52.0" y1="25.5" x2="52.9" y2="38.8" stroke="#14201b" stroke-width="2.2"/><line x1="52.9" y1="38.8" x2="44.3" y2="49.0" stroke="#14201b" stroke-width="2.2"/><line x1="37.3" y1="39.3" x2="44.3" y2="49.0" stroke="#14201b" stroke-width="2.2"/><polygon points="44.3,49.0 56.1,49.0 59.7,60.2 50.2,67.1 40.7,60.2" fill="#14201b"/><line x1="32.0" y1="54.0" x2="32.0" y2="62.0" stroke="#14201b" stroke-width="2.2"/><line x1="44.3" y1="49.0" x2="32.0" y2="54.0" stroke="#14201b" stroke-width="2.2"/><line x1="32.0" y1="54.0" x2="19.7" y2="49.0" stroke="#14201b" stroke-width="2.2"/><line x1="26.7" y1="39.3" x2="19.7" y2="49.0" stroke="#14201b" stroke-width="2.2"/><polygon points="19.7,49.0 23.3,60.2 13.8,67.1 4.3,60.2 7.9,49.0" fill="#14201b"/><line x1="11.1" y1="38.8" x2="3.5" y2="41.3" stroke="#14201b" stroke-width="2.2"/><line x1="19.7" y1="49.0" x2="11.1" y2="38.8" stroke="#14201b" stroke-width="2.2"/><line x1="11.1" y1="38.8" x2="12.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><line x1="23.4" y1="29.2" x2="12.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><polygon points="12.0,25.5 2.5,32.4 -7.0,25.5 -3.4,14.3 8.4,14.3" fill="#14201b"/><line x1="19.1" y1="14.2" x2="14.4" y2="7.7" stroke="#14201b" stroke-width="2.2"/><line x1="12.0" y1="25.5" x2="19.1" y2="14.2" stroke="#14201b" stroke-width="2.2"/><line x1="19.1" y1="14.2" x2="32.0" y2="11.0" stroke="#14201b" stroke-width="2.2"/></g><circle cx="32" cy="32" r="28" fill="none" stroke="#14201b" stroke-width="3"/><circle cx="32" cy="32" r="11" fill="#e5484d"/><path d="M29.3 24.0 h5.3 v5.3 h5.3 v5.3 h-5.3 v5.3 h-5.3 v-5.3 h-5.3 v-5.3 h5.3 z" fill="#fff" stroke="none" stroke-width="0" stroke-linejoin="round"/></svg><h1>Injury tracker</h1></div>
 <p class="lede">Gameweek 8 &bull; injuries as reported on Thursday 22 October 2026</p>
+<nav class="views" aria-label="Sections"><div class="tabs" id="views" role="tablist"><button type="button" role="tab" data-v="inj" aria-selected="true">Injuries</button><button type="button" role="tab" data-v="calc" aria-selected="false">Impact calculator</button><button type="button" role="tab" data-v="table" aria-selected="false">League table</button></div></nav>
+<div id="v-inj" role="tabpanel">
 <div class="grid">
 <section class="tile hero pl" id="hero" aria-live="polite"></section>
 <section class="tile pl"><h2>Most injuries</h2><p class="sub">Players out or doubtful.</p><ul class="rank most" id="most"></ul></section>
@@ -100,7 +149,7 @@ footer{margin:22px 4px 0;font-size:12px;color:var(--mut)}footer p{margin:0 0 8px
   <h2>Injured players</h2><p class="sub">Pick a league, then tap a player for nationality, injury detail and return time. Premier League cards also show wage, contract and how his contract value falls each week out.</p>
   <div class="tabs" id="tabs" role="tablist" aria-label="League"></div>
   <div class="filters">
-    <div><label for="q">Search</label><div class="sw"><input id="q" type="text" inputmode="search" enterkeyhint="search" placeholder="Player, club, injury or country" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" id="qx" aria-label="Clear search" hidden>&times;</button></div></div>
+    <div><label for="q">Search</label><div class="sw"><input id="q" type="text" inputmode="search" enterkeyhint="search" placeholder="Search all leagues: player, club, injury or country" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" id="qx" aria-label="Clear search" hidden>&times;</button></div></div>
     <div><label for="fc">Club</label><select id="fc"></select></div>
     <div><label for="so">Sort by</label><select id="so"><option value="impact">Highest injury score</option><option value="weeks">Longest out</option><option value="wage">Highest wage</option><option value="lost">Most wages lost</option><option value="age">Oldest</option><option value="name">Name</option></select></div>
   </div>
@@ -109,9 +158,67 @@ footer{margin:22px 4px 0;font-size:12px;color:var(--mut)}footer p{margin:0 0 8px
   <p class="empty" id="empty" hidden>No players match.</p>
 </section>
 </div>
+</div>
+<div id="v-calc" role="tabpanel" hidden>
+<div class="grid">
+<section class="tile span2">
+  <h2>Impact calculator</h2><p class="sub">Pick a club and a player to see how long he is out, which league games he misses and his Impact Score out of 10. Type a name to pick from the injured list, or fill it in yourself.</p>
+  <form id="kform" onsubmit="return false" autocomplete="off">
+    <div class="f"><label for="kteam">Club</label><select id="kteam"></select></div>
+    <div class="f"><label for="kplayer">Player</label><input id="kplayer" type="text" list="kplist" placeholder="e.g. Bukayo Saka" autocapitalize="off" spellcheck="false"><datalist id="kplist"></datalist></div>
+    <div class="f"><label for="kinj">Injury</label><select id="kinj"></select></div>
+    <div class="two">
+      <div class="f"><label for="kmins">Minutes played this season</label><input id="kmins" type="number" inputmode="numeric" min="0" placeholder="e.g. 360"></div>
+      <div class="f"><label for="kga">Goals + assists</label><input id="kga" type="number" inputmode="numeric" min="0" placeholder="e.g. 3"></div>
+    </div>
+    <div class="f" style="margin:0"><label for="kimp">How hard to replace <span class="kval" id="kimpv"></span></label><input id="kimp" type="range" min="0" max="10" value="5"></div>
+  </form>
+</section>
+<section class="tile span2 kres" aria-live="polite">
+  <h2>Result</h2>
+  <div class="ktop"><div><span class="kpill" id="kstatus"></span><p class="kwho" id="kwho"></p><p class="kbig" id="kweeks"></p></div>
+  <div class="kscore mono" id="kscore" role="img"><span id="kscorev">-</span><small>IMPACT SCORE</small></div></div>
+  <p class="ksum" id="ksum"></p>
+  <div class="kstats"><div><b id="kgames">-</b><span>League games missed</span></div><div><b id="kpct">-</b><span>Of the season</span></div></div>
+  <div class="kbar" aria-hidden="true"><i id="kfill"></i></div><div class="kcap"><span>Back soon</span><span>Season over</span></div>
+  <div id="kparts"></div><div id="kmissed"></div>
+</section>
+<section class="tile span2">
+  <h2>Injury-prone points</h2><p class="sub">Scores the player above out of 100 for how often he gets hurt. Higher means more injury-prone. Fill in what you know.</p>
+  <div class="two">
+    <div class="f"><label for="kpi">Injuries in last 2 seasons</label><input id="kpi" type="number" inputmode="numeric" min="0" placeholder="e.g. 3"></div>
+    <div class="f"><label for="kpg">League games missed last season</label><input id="kpg" type="number" inputmode="numeric" min="0" placeholder="e.g. 12"></div>
+    <div class="f" style="margin:0"><label for="kpa">Age</label><input id="kpa" type="number" inputmode="numeric" min="15" max="45" placeholder="e.g. 29"></div>
+    <label class="chk" for="kpr"><input id="kpr" type="checkbox"> Same injury before</label>
+  </div>
+</section>
+<section class="tile span2 kres" aria-live="polite">
+  <h2>Injury-prone result</h2>
+  <div class="ktop"><div><span class="kpill" id="kpband">Low</span><p class="kwho" id="kpwho"></p></div>
+  <div class="kscore mono" id="kpscore" role="img"><span id="kpscorev">0</span><small>OUT OF 100</small></div></div>
+  <p class="ksum" id="kpsum"></p>
+  <div class="kbar" aria-hidden="true"><i id="kpfill"></i></div>
+  <div class="kscale"><span>0 Low</span><span>25 Moderate</span><span>50 High</span><span>75 Very high</span></div>
+  <div id="kpparts"></div>
+</section>
+<section class="tile span4 span2">
+  <h2>Injury types</h2><p class="sub">Tap an injury type to load it into the calculator.</p>
+  <div class="grps" id="kinjlist"></div>
+</section>
+</div>
+</div>
+<div id="v-table" role="tabpanel" hidden>
+<div class="grid"><section class="tile span4 span2">
+  <h2>Premier League table</h2><p class="sub" id="ktblnote"></p>
+  <div class="tbl"><table id="ktbl"><thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Out</th></tr></thead><tbody></tbody></table></div>
+  <div class="key"><span style="--c:var(--g)">Top four</span><span style="--c:#e5484d">Bottom three</span><span style="--c:var(--a)">Selected in calculator</span></div>
+  <p class="knote">&ldquo;Out&rdquo; is the number of injured or doubtful players in this tracker.</p>
+</section></div>
+</div>
 <footer>
   <p><b>Injury score</b> (0 to 10) combines how long a player is out with how important he is to his team. Higher means a bigger blow. A club's score is the sum of its players' scores.</p>
   <p><b>Coverage:</b> Premier League clubs with a published injury report are listed (Manchester City, Everton, Fulham, Crystal Palace and Coventry City had none found, so a missing club does not mean nobody is hurt). Championship and League One come from club and news reports published 10 to 22 October 2026 (soccernews.com, Championship Insights, The72, the Chad and Last Word On Football). League One is only partly covered and no current League Two injury reports were found, so those lists are incomplete. Wages are not shown for the three lower leagues. Nationalities were filled in from memory; ones I was less sure of say so when you open the card. Return times in the lower leagues are estimates, and some source dates looked stale, so treat them as a guide.</p>
+  <p><b>Impact calculator:</b> Impact Score = 40% minutes share + 30% share of team goals and assists + 20% how hard he is to replace + 10% difficulty of the fixtures he misses (weights from the original calculator, v1.0). Missing numbers count as zero, so add minutes and goals + assists for a full score. Games missed use the Premier League fixtures loaded here, then about one game a week. Time-out ranges for injury types are rough typical values. Injury-prone points and the Impact Score are estimates. Independent fan project, not affiliated with or endorsed by the Premier League or any club. Not a betting model. League table after 7 games each as of 20 October 2026 (Sky Sports and Tribuna). Managers are from the Premier League&rsquo;s 2026/27 list, so check for changes after 22 October.</p>
   <p>This is a snapshot, not a live feed. Edit the <code>DATA</code> and <code>FIX</code> arrays in the script to refresh it. Injuries are from club press conferences as reported by Rotowire, Fantasy Football Scout, Fantasy Football Hub and Squawka on 21 to 22 October 2026. Fixtures and win chances are from Sportradar.</p>
   <p>Only players whose club could be confirmed are listed. Ages are as of 22 October 2026. Nationality is the senior national team (Femi Azeez is listed as English but is also reported as Nigerian, so check which side he represents). Past injuries are from memory, so check them before publishing. &ldquo;est.&rdquo; weeks are estimates and the importance rating is my own judgement. Wages are unofficial weekly estimates in pounds, checked on 22 October 2026. Where Capology figures were available they are used and labelled; otherwise they come from SalarySport, so the two sources can differ. Pep Chavarría, Zadok Yohanna and Femi Azeez are shown without a wage because only outdated or placeholder figures exist. Contract end dates assume 30 June of the final year. &ldquo;Contract value left&rdquo; is his weekly wage multiplied by the weeks left on his deal, so it falls by one week&rsquo;s wage for every week he is out. Not medical advice.</p>
 </footer>
@@ -155,7 +262,6 @@ var DATA=[
  {n:"Kaye Furo",c:"Brentford",age:null,nat:"Belgium",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
  {n:"Antoni Milambo",c:"Brentford",age:null,nat:"Netherlands",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
  {n:"Pascal Struijk",c:"Brighton",age:null,nat:"Netherlands",f:"",inj:"Fitness check",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Red card overturned"},
- {n:"Jamie Gittens",c:"Chelsea",age:null,nat:"England",f:"",inj:"Ankle",w:1.3,imp:.5,st:"Out",h:[]},
  {n:"Emi Martinez",c:"Chelsea",age:null,nat:"Argentina",f:"",inj:"Jaw fracture (surgery)",w:2,est:1,imp:.5,st:"Out",h:[],note:"Hurt at Everton on 17 Oct. Reports say at least 40 days; he says a few weeks"},
  {n:"Emmanuel Emegha",c:"Chelsea",age:null,nat:"Netherlands",f:"",inj:"Training setback",w:2,est:1,imp:.5,st:"Out",h:[]},
  {n:"Nobel Mendy",c:"Hull City",age:null,nat:"France",f:"",inj:"Groin",w:1.0,imp:.5,st:"Out",h:[]},
@@ -471,12 +577,12 @@ function tracker(p){
   if(p.w>12)box.appendChild(el("p","","Chart shows the first 12 weeks."));
   return box;
 }
-function card(p){
+function card(p,showLg){
   var pl=p.lg==="Premier League";
   var d=el("details","p"),s=el("summary"),l=el("div"),n=el("div","n",p.n);
   if(p.rec)n.appendChild(el("span","pill","Recurring"));
   l.appendChild(n);
-  l.appendChild(el("div","meta",p.c+" • "+(p.nat==="n/a"?"nationality n/a":p.f+" "+p.nat)+(p.age?" • age "+p.age:"")));
+  l.appendChild(el("div","meta",p.c+(showLg?" ("+p.lg+")":"")+" • "+(p.nat==="n/a"?"nationality n/a":p.f+" "+p.nat)+(p.age?" • age "+p.age:"")));
   l.appendChild(el("div","meta",p.inj));
   if(pl){var pm=el("div","meta pay");pm.appendChild(el("b","",p.wage?money(p.wage/1000)+"/wk":"Wage n/a"));pm.appendChild(document.createTextNode((p.wage?" (est.)":"")+" • "+(p.end?"contract to "+p.end:"contract n/a")));l.appendChild(pm)}
   l.appendChild(el("div","meta",p.st+" • about "+p.w+" wk"+(p.w===1?"":"s")+(p.est?" (est.)":"")));
@@ -495,7 +601,7 @@ function card(p){
     if(p.nv)b.appendChild(el("div","meta","Nationality from memory, not confirmed against a source. Please check."));
     if(p.imp===.5&&p.age==null&&pl)b.appendChild(el("div","meta","Injury score uses a default importance of 0.5 until an importance rating is added."));
     if(!pl)b.appendChild(el("div","meta","Injury score uses a default importance of 0.5. Return time is an estimate from the club or news report."));
-    if(pl)b.appendChild(tracker(p));
+    if(pl){b.appendChild(tracker(p));var ub=el("button","use","Open in impact calculator");ub.type="button";ub.addEventListener("click",function(e){e.preventDefault();useInCalc(p)});b.appendChild(ub)}
     b.appendChild(el("div","",p.h.length?"Previous injuries ("+p.h.length+")":"No major previous injuries recorded here."));
     if(p.h.length){var u=el("ul","tags");p.h.forEach(function(x){u.appendChild(el("li",x.i===p.inj?"rec":"",x.i+" • "+x.y))});b.appendChild(u)}
     d.appendChild(b);
@@ -503,28 +609,179 @@ function card(p){
   return d;
 }
 var sorts={impact:function(a,b){return b.imp10-a.imp10},weeks:function(a,b){return b.w-a.w},age:function(a,b){return (b.age||0)-(a.age||0)},name:function(a,b){return a.n.localeCompare(b.n)},wage:function(a,b){return (b.wage||0)-(a.wage||0)},lost:function(a,b){return b.lost-a.lost}};
-function norm(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function norm(x){return x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+/* Search: every word must start a word in the player's name, club (and its nickname), injury, country, league or status.
+   It searches all four leagues at once. If nothing matches that way it falls back to matching inside words. */
+var ALIAS={"Manchester City":"man city","Manchester United":"man utd man united","Tottenham":"spurs tottenham hotspur","Wolverhampton Wanderers":"wolves","Nottingham Forest":"forest nottm","Newcastle United":"newcastle toon","Brighton":"brighton and hove albion","Bournemouth":"afc bournemouth","West Ham United":"west ham hammers","Sheffield United":"sheff utd blades","Queens Park Rangers":"qpr","West Bromwich Albion":"west brom wba","Birmingham City":"birmingham blues","Preston North End":"preston pne","Hull City":"hull tigers","Leeds United":"leeds","Aston Villa":"villa avfc","Crystal Palace":"palace","Ipswich Town":"ipswich tractor boys","Sunderland":"sunderland black cats","Wrexham":"wrexham","Derby County":"derby rams"};
+function squash(x){return x.replace(/[^a-z0-9\s]/g,"")}
+function hayOf(p){
+  if(p._h)return p._h;
+  var h=norm(p.n+" "+p.inj+" "+p.c+" "+(ALIAS[p.c]||"")+" "+p.nat+" "+p.lg+" "+(p.st==="Out"?"out":"doubt doubtful"));
+  h=h+" "+squash(h);
+  return p._h={h:h,t:h.split(/[^a-z0-9]+/).filter(Boolean)};
+}
+function hits(p,ws,inside){
+  var x=hayOf(p);
+  return ws.every(function(w){return inside?x.h.indexOf(w)>-1:x.t.some(function(t){return t.indexOf(w)===0})});
+}
+function nameHits(p,ws){var t=squash(norm(p.n)).split(/\s+/);return ws.every(function(w){return t.some(function(x){return x.indexOf(w)===0})})}
 function render(){
-  var q=norm($("q").value.trim()),c=fc.value,words=q?q.split(/\s+/):[];
-  var inLg=DATA.filter(function(p){return p.lg===curLg});
-  var rows=inLg.filter(function(p){
-    if(c!=="all"&&p.c!==c)return false;
-    var hay=norm(p.n+" "+p.inj+" "+p.c+" "+p.nat+" "+p.st);
-    return words.every(function(w){return hay.indexOf(w)>-1});
-  }).sort(sorts[$("so").value]);
+  var raw=$("q").value.trim(),q=squash(norm(raw)).replace(/\s+/g," ").trim(),ws=q?q.split(" "):[],searching=ws.length>0,c=fc.value;
+  var pool=searching?DATA:DATA.filter(function(p){return p.lg===curLg});
+  var rows;
+  if(searching){
+    rows=pool.filter(function(p){return hits(p,ws,false)});
+    if(!rows.length)rows=pool.filter(function(p){return hits(p,ws,true)});
+  }else rows=pool.filter(function(p){return c==="all"||p.c===c});
+  rows.sort(sorts[$("so").value]);
+  if(searching)rows=rows.filter(function(p){return nameHits(p,ws)}).concat(rows.filter(function(p){return !nameHits(p,ws)}));
+  fc.disabled=searching;
   $("qx").hidden=!$("q").value;
-  $("count").textContent="Showing "+rows.length+" of "+inLg.length+" "+curLg+" players"+(q?' for "'+$("q").value.trim()+'"':"");
-  var ul=$("list"),fr=document.createDocumentFragment();rows.forEach(function(p){var li=el("li");li.appendChild(card(p));fr.appendChild(li)});ul.textContent="";ul.appendChild(fr);
+  $("count").textContent=searching?"Showing "+rows.length+" of "+DATA.length+" players across all leagues for “"+raw+"”":"Showing "+rows.length+" of "+pool.length+" "+curLg+" players";
+  var ul=$("list"),fr=document.createDocumentFragment();
+  rows.forEach(function(p){var li=el("li");li.appendChild(card(p,searching));fr.appendChild(li)});
+  ul.textContent="";ul.appendChild(fr);
   $("empty").hidden=rows.length>0;
-  $("empty").textContent=inLg.length?"No players match.":"No "+curLg+" injuries found yet.";
+  $("empty").textContent=searching?"No players match. Try a surname, club, injury or country.":(pool.length?"No players match.":"No "+curLg+" injuries found yet.");
 }
 var qt=0;
-$("q").addEventListener("input",function(){clearTimeout(qt);$("qx").hidden=!$("q").value;qt=setTimeout(render,120)});
+$("q").addEventListener("input",function(){clearTimeout(qt);$("qx").hidden=!$("q").value;qt=setTimeout(render,100)});
 $("fc").addEventListener("change",render);$("so").addEventListener("change",render);
 $("qx").addEventListener("click",function(){$("q").value="";render();$("q").focus()});
-$("q").addEventListener("keydown",function(e){if(e.key==="Escape"){$("q").value="";render()}});
+$("q").addEventListener("keydown",function(e){if(e.key==="Escape"){$("q").value="";render()}else if(e.key==="Enter"){clearTimeout(qt);render();$("q").blur()}});
+document.addEventListener("keydown",function(e){if(e.key==="/"&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!$("v-inj").hidden){e.preventDefault();$("q").focus()}});
+var SEED={"as_of":"2026-10-22","table_note":"League table after 7 games each, as of 20 Oct 2026 (Sky Sports and Tribuna). Matches on 24 Oct are not included yet.","table":[["Manchester City",7,7,0,0,19,7],["Arsenal",7,6,0,1,11,5],["Brighton",7,5,1,1,23,5],["Chelsea",7,4,1,2,17,13],["Liverpool",7,3,3,1,9,8],["Brentford",7,2,4,1,13,8],["Leeds United",7,2,4,1,9,6],["Everton",7,2,4,1,8,7],["Hull City",7,2,3,2,8,7],["Ipswich Town",7,3,0,4,11,15],["Newcastle United",7,2,2,3,10,14],["Aston Villa",7,2,2,3,7,11],["Manchester United",7,1,4,2,10,10],["Crystal Palace",7,2,1,4,9,17],["Bournemouth",7,1,3,3,9,13],["Tottenham Hotspur",7,1,3,3,6,10],["Coventry City",7,2,0,5,6,14],["Fulham",7,1,2,4,7,10],["Nottingham Forest",7,1,2,4,5,9],["Sunderland",7,1,1,5,6,14]],"fixtures":[["Sat 24 Oct",[["Arsenal","Everton"],["Aston Villa","Manchester City"],["Chelsea","Tottenham Hotspur"],["Coventry City","Fulham"],["Crystal Palace","Newcastle United"],["Hull City","Brentford"],["Ipswich Town","Nottingham Forest"],["Liverpool","Brighton"],["Manchester United","Bournemouth"],["Sunderland","Leeds United"]]],["Sat 31 Oct",[["Bournemouth","Leeds United"],["Aston Villa","Fulham"],["Brentford","Nottingham Forest"],["Chelsea","Manchester United"],["Coventry City","Sunderland"],["Hull City","Ipswich Town"],["Manchester City","Brighton"],["Tottenham Hotspur","Crystal Palace"],["Liverpool","Arsenal"],["Newcastle United","Everton"]]]],"managers":{"Arsenal":"Mikel Arteta","Aston Villa":"Unai Emery","Bournemouth":"Marco Rose","Brentford":"Keith Andrews","Brighton":"Fabian Hurzeler","Chelsea":"Xabi Alonso","Coventry City":"Frank Lampard","Crystal Palace":"Pierre Sage","Everton":"David Moyes","Fulham":"Álvaro Arbeloa","Hull City":"Sergej Jakirovic","Ipswich Town":"Gary O'Neil","Leeds United":"Daniel Farke","Liverpool":"Andoni Iraola","Manchester City":"Enzo Maresca","Manchester United":"Michael Carrick","Newcastle United":"Matthias Jaissle","Nottingham Forest":"Oliver Glasner","Sunderland":"Régis Le Bris","Tottenham Hotspur":"Roberto De Zerbi"},"managers_note":"Managers from the Premier League's 2026/27 list. Check for changes after 22 Oct.","engine":{"version":"v1.0","scale_max":10,"neutral_difficulty":0.5,"weights":{"minutes_share":0.4,"goal_contribution_share":0.3,"replacement_gap":0.2,"fixture_difficulty":0.1}}};
+
+/* ============ Impact calculator, injury-prone points, league table ============ */
+var KMON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var KINJ=[["Minor knock",0,1],["Concussion",1,2],["Ankle ligament sprain",2,6],["Calf strain",2,5],["Thigh strain",2,4],["Hamstring strain",3,8],["Groin injury",3,8],["Knee ligament (MCL)",4,8],["Shoulder dislocation",4,8],["Broken metatarsal",6,10],["Broken leg",16,30],["Torn ACL",34,44],["Torn Achilles",36,48],["Cold or flu",0,1],["Illness (virus, stomach bug)",0,2]].sort(function(a,b){return a[2]-b[2]||a[1]-b[1]||(a[0]<b[0]?-1:1)});
+var KMAP=[[/hamstring/,"Hamstring strain"],[/calf/,"Calf strain"],[/thigh|quad/,"Thigh strain"],[/groin/,"Groin injury"],[/ankle/,"Ankle ligament sprain"],[/illness|virus/,"Illness (virus, stomach bug)"],[/\bflu\b|\bcold\b/,"Cold or flu"],[/\bacl\b|cruciate/,"Torn ACL"],[/achilles/,"Torn Achilles"],[/concussion/,"Concussion"],[/fracture|broken/,"Broken metatarsal"]];
+var KLOAD=6048e5,ksel=null,kauto=false,kkind="mid";
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function ktoday(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())}
+function kdate(l){var m=/(\d+)\s+([A-Za-z]{3})/.exec(l),y=+SEED.as_of.slice(0,4),mo=KMON.indexOf(m[2]);if(mo<+SEED.as_of.slice(5,7)-7)y++;return new Date(y,mo,+m[1])}
+function kfmt(d){return d.getDate()+" "+KMON[d.getMonth()]+(d.getFullYear()!==ktoday().getFullYear()?" "+d.getFullYear():"")}
+function kord(n){return n+(n%100>10&&n%100<14?"th":["th","st","nd","rd"][n%10]||"th")}
+function kclamp(x){return Math.max(0,Math.min(1,x))}
+function kfix(t){var out=[];SEED.fixtures.forEach(function(r){var d=kdate(r[0]);r[1].forEach(function(m){if(m[0]===t)out.push({d:r[0],dt:d,opp:m[1],home:true});if(m[1]===t)out.push({d:r[0],dt:d,opp:m[0],home:false})})});return out}
+function kstanding(){return SEED.table.map(function(r){return {n:r[0],p:r[1],w:r[2],d:r[3],l:r[4],gd:r[5]-r[6],pts:r[2]*3+r[3],gf:r[5]}}).sort(function(a,b){return b.pts-a.pts||b.gd-a.gd})}
+function kstrength(){var rows=kstanding(),s={};rows.forEach(function(r,i){s[r.n]=1-i/(rows.length-1)});return s}
+function khue(score10){return heat(score10)}
+function kpaint(node,score10){var h=heat(score10);node.style.background=h.bg;node.style.boxShadow=h.glow}
+function kpill(node,text,score10){node.textContent=text;node.style.background=heat(score10).bg}
+
+function krenderTable(team){
+  var rows=kstanding();
+  $("ktbl").tBodies[0].innerHTML=rows.map(function(r,i){
+    var c=clubs[r.n],cls=(r.n===team?"on ":"")+(i<4?"top":i>=rows.length-3?"bot":"");
+    return '<tr class="'+cls+'"><td>'+(i+1)+"</td><td>"+esc(r.n)+"</td><td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td><td>"+(r.gd>0?"+":"")+r.gd+"</td><td>"+r.pts+"</td><td>"+(c?c.n:0)+"</td></tr>";
+  }).join("");
+  $("ktblnote").textContent=SEED.table_note;
+  var i=rows.map(function(r){return r.n}).indexOf(team);return {pos:i+1,pts:rows[i].pts};
+}
+function krenderTypes(){
+  var G=[["g-short","Short term: up to 3 weeks",function(j){return j[2]<=3}],["g-mid","Medium term: 4 to 10 weeks",function(j){return j[2]>3&&j[2]<=10}],["g-long","Severe: over 10 weeks",function(j){return j[2]>10}]];
+  $("kinjlist").innerHTML=G.map(function(g){
+    return '<div class="grp '+g[0]+'"><h3>'+g[1]+"</h3>"+KINJ.map(function(j,i){return [j,i]}).filter(function(x){return g[2](x[0])}).map(function(x){
+      return '<button type="button" data-i="'+x[1]+'"><span>'+esc(x[0][0])+"</span><em>"+(x[0][2]<=1?"up to 1 wk":x[0][1]+"–"+x[0][2]+" wks")+"</em></button>";
+    }).join("")+"</div>";
+  }).join("");
+}
+function krow(a,b){return '<div class="krow"><span>'+a+'</span><span class="d">'+b+"</span></div>"}
+function kupdate(){
+  var E=SEED.engine,W=E.weights,team=$("kteam").value,rating=+$("kimp").value/10,name=$("kplayer").value.trim(),who=name||"The player",fx=kfix(team).filter(function(f){return f.dt>=ktoday()});
+  $("kimpv").textContent=$("kimp").value+" / 10";
+  var j=KINJ[+$("kinj").value],games,weeksText,kind,note,win,tdy=ktoday();
+  if(ksel){
+    win=ksel.w;var back=new Date(tdy.getTime()+ksel.w*KLOAD);
+    games=fx.filter(function(f){return f.dt<back}).length;
+    if(fx.length&&fx[fx.length-1].dt<back)games+=Math.round((back-fx[fx.length-1].dt)/KLOAD);
+    if(!fx.length)games=Math.round(win);
+    weeksText=(ksel.est?"Back about ":"Back ")+kfmt(back);kind=win<=3?"short":win<=10?"mid":"long";
+    note="Based on the tracker's "+(ksel.est?"estimated":"reported")+" return ("+kfmt(back)+").";
+  }else{
+    games=Math.min(38,Math.max(1,Math.round((j[1]+j[2])/2)));win=j[2];
+    weeksText=j[2]<=1?"Up to 1 week":j[1]+"–"+j[2]+" weeks";kind=j[2]<=3?"short":j[2]<=10?"mid":"long";
+    note="Typical range for a "+j[0].toLowerCase()+".";
+  }
+  kkind=kind;
+  kpill($("kstatus"),kind==="short"?"Short absence":kind==="long"?"Long absence":"Mid-range absence",kind==="short"?2:kind==="long"?9:5);
+  $("kweeks").textContent=weeksText;
+  var t=krenderTable(team);
+  $("kwho").textContent=(name?name+", ":"")+team+" ("+kord(t.pos)+", "+t.pts+" pts). Manager: "+(SEED.managers[team]||"unknown");
+  var row=SEED.table.filter(function(r){return r[0]===team})[0],teamMins=row[1]*90,teamGoals=row[5];
+  var mins=parseFloat($("kmins").value),ga=parseFloat($("kga").value),limited=!(mins>0&&teamMins>0),noGa=!(ga>=0);
+  var ms=limited?0:kclamp(mins/teamMins),gs=noGa||teamGoals<=0?0:kclamp(ga/teamGoals);
+  var S=kstrength(),used=[],end=new Date(tdy.getTime()+(win||0)*KLOAD);
+  if(win>0)fx.forEach(function(f){if(f.dt>tdy&&f.dt<=end&&S[f.opp]!=null)used.push(f.home?Math.max(0,S[f.opp]-.1):Math.min(1,S[f.opp]+.1))});
+  var diff=used.length?used.reduce(function(a,b){return a+b},0)/used.length:E.neutral_difficulty;
+  var score=kclamp(W.minutes_share*ms+W.goal_contribution_share*gs+W.replacement_gap*rating+W.fixture_difficulty*diff)*E.scale_max;
+  var pct=function(x){return Math.round(x*100)+"%"};
+  $("kparts").innerHTML='<p class="kh">How the score is built</p>'+
+    krow("Minutes share",(limited?"no data":pct(ms))+" × "+W.minutes_share)+krow("Goals + assists share",(noGa?"no data":pct(gs))+" × "+W.goal_contribution_share)+
+    krow("Replacement gap",pct(rating)+" × "+W.replacement_gap)+krow("Fixture difficulty",pct(diff)+(used.length?"":" (neutral)")+" × "+W.fixture_difficulty)+
+    (limited||noGa?'<p class="knote">Low confidence: add minutes played and goals + assists for a full score. Missing numbers count as zero.</p>':"");
+  $("kscorev").textContent=score.toFixed(1);kpaint($("kscore"),score);$("kscore").setAttribute("aria-label","Impact Score "+score.toFixed(1)+" out of "+E.scale_max);
+  $("kgames").textContent=games;$("kpct").textContent=Math.round(games/38*100)+"%";
+  $("kfill").style.width=Math.max(4,games/38*100)+"%";$("kfill").style.background=heat(Math.min(10,games/38*30)).bg;
+  $("ksum").textContent=note+" "+who+" would miss about "+games+" league "+(games===1?"game":"games")+" ("+Math.round(games/38*100)+"% of the season). Impact Score "+score.toFixed(1)+" out of "+E.scale_max+".";
+  var h='<p class="kh">Next fixtures</p>';
+  if(!fx.length)h+='<p class="knote">No fixtures loaded for this club yet.</p>';
+  fx.forEach(function(f,i){h+='<div class="krow"><span><span class="d">'+esc(f.d)+"</span> "+(f.home?"v ":"at ")+esc(f.opp)+"</span>"+(i<games?'<span class="kout">'+esc(name?name.split(" ").pop():"Misses")+" out</span>":"")+"</div>"});
+  if(games>fx.length)h+='<p class="knote">'+(games-fx.length)+" more missed "+(games-fx.length===1?"game falls":"games fall")+" beyond the fixtures loaded here.</p>";
+  $("kmissed").innerHTML=h;
+  kprone();
+}
+function kprone(){
+  var inj=Math.max(0,+$("kpi").value||0),gm=Math.max(0,+$("kpg").value||0),age=+$("kpa").value||0,rep=$("kpr").checked;
+  var cur={short:3,mid:6,long:10}[kkind]||5,f=Math.min(35,inj*7),g=Math.min(30,gm),r=rep?15:0,a=age>=32?10:age>=30?7:age>=28?3:0;
+  var total=Math.min(100,f+g+r+a+cur),band=total>=75?"Very high":total>=50?"High":total>=25?"Moderate":"Low",name=$("kplayer").value.trim();
+  kpill($("kpband"),band,total/10);
+  $("kpwho").textContent=(name||"The player")+", "+$("kteam").value;
+  $("kpscorev").textContent=total;kpaint($("kpscore"),total/10);$("kpscore").setAttribute("aria-label","Injury-prone points "+total+" out of 100");
+  $("kpfill").style.width=total+"%";$("kpfill").style.background=heat(total/10).bg;
+  $("kpsum").textContent=(inj||gm||age||rep)?"Injury-prone points: "+total+" out of 100 ("+band.toLowerCase()+").":"Only the current absence is counted so far. Add injury history above for a full score.";
+  $("kpparts").innerHTML='<p class="kh">How the points add up</p>'+[["Injuries in last 2 seasons (7 each, max 35)",f,35],["Games missed last season (1 each, max 30)",g,30],["Same injury before",r,15],["Age (28+ adds points, max 10)",a,10],["Current absence ("+(kkind==="mid"?"3 to 10 weeks":kkind==="short"?"short":"long")+")",cur,10]].map(function(x){return krow(x[0],x[1]+" / "+x[2])}).join("");
+}
+function kpick(p){
+  ksel=p;kauto=true;
+  if(SEED.table.some(function(r){return r[0]===p.c}))$("kteam").value=p.c;
+  var t=norm(p.inj),i;for(i=0;i<KMAP.length;i++)if(KMAP[i][0].test(t)){$("kinj").value=KINJ.map(function(x){return x[0]}).indexOf(KMAP[i][1]);break}
+}
+function useInCalc(p){
+  showView("calc");$("kplayer").value=p.n;kpick(p);$("kmins").value="";$("kga").value="";kupdate();
+  window.scrollTo({top:0});
+}
+function showView(v){
+  ["inj","calc","table"].forEach(function(x){$("v-"+x).hidden=x!==v});
+  Array.prototype.forEach.call(document.querySelectorAll("#views button"),function(b){b.setAttribute("aria-selected",b.getAttribute("data-v")===v?"true":"false")});
+  try{history.replaceState(null,"",v==="inj"?location.pathname+location.search:"#"+v)}catch(e){}
+}
+function kinit(){
+  SEED.table.map(function(r){return r[0]}).sort().forEach(function(c){$("kteam").add(new Option(c,c))});
+  KINJ.forEach(function(j,i){$("kinj").add(new Option(j[0],i))});
+  $("kteam").value="Arsenal";$("kinj").value=KINJ.map(function(x){return x[0]}).indexOf("Hamstring strain");
+  var seen={},dl=$("kplist");
+  DATA.filter(function(p){return p.lg==="Premier League"}).forEach(function(p){if(!seen[p.n]){seen[p.n]=1;var o=document.createElement("option");o.value=p.n;o.label=p.c;dl.appendChild(o)}});
+  krenderTypes();
+  ["kmins","kga","kimp"].forEach(function(id){$(id).addEventListener("input",kupdate)});
+  $("kteam").addEventListener("input",function(){if(ksel&&ksel.c!==$("kteam").value)ksel=null;kupdate()});
+  $("kinj").addEventListener("input",function(){ksel=null;kauto=false;kupdate()});
+  $("kplayer").addEventListener("input",function(){
+    var v=squash(norm($("kplayer").value.trim())),hit=null;
+    if(v)DATA.some(function(p){if(p.lg==="Premier League"&&squash(norm(p.n))===v){hit=p;return true}});
+    if(hit)kpick(hit);else if(ksel){ksel=null;kauto=false}
+    kupdate();
+  });
+  ["kpi","kpg","kpa"].forEach(function(id){$(id).addEventListener("input",kprone)});$("kpr").addEventListener("change",kprone);
+  $("kinjlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;ksel=null;kauto=false;$("kinj").value=b.getAttribute("data-i");kupdate();$("kform").scrollIntoView({block:"start"})});
+  Array.prototype.forEach.call(document.querySelectorAll("#views button"),function(b){b.addEventListener("click",function(){showView(b.getAttribute("data-v"));window.scrollTo({top:0})})});
+  kupdate();
+  var hv=location.hash.replace("#","");if(hv==="calc"||hv==="table")showView(hv);
+}
 drawTabs();fillClubs();fillSorts();
 render();
+kinit();
 })();
 </script>
 </body>
