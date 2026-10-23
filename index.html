@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Injury Tracker | Sidelined FC</title>
+<meta name="description" content="Premier League, Championship, League One and League Two injuries with a severity score, an impact calculator, injury-prone points and the league table. Independent fan project.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23fff' stroke='%2314201b' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='15' fill='%23e5484d'/%3E%3Cpath d='M32 23v18M23 32h18' stroke='%23fff' stroke-width='6'/%3E%3C/svg%3E">
+<style>
+:root{--g:#2f9e5b;--gsvg:%232f9e5b;--bg:#f1f4f2;--card:#fff;--fg:#14201b;--mut:#5d6f67;--line:#dbe4df;--a:#c6f23a;--b:#b9a2f0;--ink:#1a2410;--soft:#eef3f0}
+@media(prefers-color-scheme:dark){:root{--g:#5fd68a;--gsvg:%235fd68a;--bg:#0e1311;--card:#171e1b;--fg:#eef3f0;--mut:#9aaba3;--line:#27312d;--soft:#1d2622}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:1120px;margin:0 auto;padding:16px 14px 48px}
+h1{font-size:clamp(28px,7vw,38px);font-weight:650;letter-spacing:-.03em;line-height:1.1;margin:14px 4px 4px;color:var(--fg);
+ background:linear-gradient(105deg,var(--fg) 0%,var(--fg) 38%,var(--g) 46%,var(--a) 50%,var(--g) 54%,var(--fg) 62%,var(--fg) 100%);background-size:260% 100%;
+ -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3.6s linear infinite;width:fit-content;max-width:100%}
+.brand{display:flex;align-items:center;gap:12px;margin:14px 4px 4px}.brand h1{margin:0}
+.logo{width:clamp(46px,11vw,60px);height:auto;flex:none;filter:drop-shadow(0 0 8px color-mix(in oklch,var(--g) 45%,transparent))}
+@keyframes shimmer{0%{background-position:130% 0}100%{background-position:-130% 0}}
+.lede{color:var(--fg);margin:0 4px 16px;font-size:14px;font-weight:500;text-shadow:0 0 12px color-mix(in oklch,var(--g) 50%,transparent)}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr}.span2{grid-column:span 2}}
+@media(min-width:1000px){.grid{grid-template-columns:repeat(4,1fr)}.hero{grid-column:span 2}.span2{grid-column:span 2}.span4{grid-column:span 4}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;min-width:0}
+.tile h2{font-size:14px;font-weight:650;letter-spacing:.01em;color:var(--g);text-shadow:0 0 14px color-mix(in oklch,var(--g) 60%,transparent),0 0 2px color-mix(in oklch,var(--g) 40%,transparent);margin:0 0 4px}
+.sub{font-size:12px;color:var(--mut);margin:0 0 14px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.hero .name{font-size:clamp(28px,6vw,38px);font-weight:650;letter-spacing:-.03em;line-height:1.1;margin:4px 0 10px}
+.hero .name span{background:var(--a);color:var(--ink);padding:0 10px;border-radius:12px;box-decoration-break:clone}
+.hero .big{font-size:48px;font-weight:650;letter-spacing:-.04em;line-height:1}
+.hero p{margin:6px 0 0;color:var(--mut);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;padding:0;list-style:none}
+.chips li{border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:12px}
+.chips li.out{background:color-mix(in oklch,var(--b) 25%,transparent)}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.rank li{display:grid;grid-template-columns:96px 1fr 58px;gap:10px;align-items:center;font-size:12px}
+.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.22,1,.36,1)}
+.most .bar i{background:var(--a)}.worst .bar i{background:var(--b)}
+.v{text-align:right;color:var(--mut)}
+.fx{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fx li{background:var(--soft);border-radius:18px;padding:12px 14px;font-size:13px}
+.fx .t{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.fx .t em{font-style:normal;color:var(--mut);font-weight:400;font-size:11px;white-space:nowrap}
+.fx .m{display:flex;justify-content:space-between;gap:8px;color:var(--mut);font-size:11px;margin-top:4px}
+.pb{display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:8px;background:var(--line)}
+.filters{display:grid;gap:10px;margin-bottom:14px}@media(min-width:620px){.filters{grid-template-columns:1.4fr 1fr 1fr}}
+label{display:block;font-size:12px;color:var(--mut)}
+input,select{width:100%;min-height:44px;margin-top:4px;padding:8px 12px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit}
+select{-webkit-appearance:none;appearance:none;padding-right:40px;background-repeat:no-repeat;background-position:right 14px center;background-size:14px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f9e5b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E")}
+@media(prefers-color-scheme:dark){select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235fd68a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E")}}
+.sw{position:relative}.sw input{padding-right:44px}
+.sw button{position:absolute;right:6px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:var(--g);font-size:22px;line-height:1;cursor:pointer}
+.sw button[hidden]{display:none}
+.count{font-size:12px;color:var(--mut);margin:0 0 10px}
+.chev{grid-row:1/5;grid-column:3;width:9px;height:9px;border-right:3px solid var(--g);border-bottom:3px solid var(--g);transform:rotate(45deg);transition:transform .25s;margin:0 4px 0 2px}
+.p[open] .chev{transform:rotate(-135deg)}
+.pay{color:var(--fg)!important}.pay b{font-weight:600}
+.trk{margin-top:12px;background:var(--card);border-radius:14px;padding:12px}
+.trk h3{font-size:12px;font-weight:600;margin:0 0 2px}.trk p{margin:0 0 8px;font-size:12px;color:var(--mut)}
+.cols{display:flex;align-items:flex-end;gap:4px;height:70px}
+.cols span{flex:1;height:100%;display:flex;align-items:flex-end}
+.cols i{display:block;width:100%;background:var(--g);border-radius:5px 5px 0 0;min-height:2px}
+.cols span:first-child i{opacity:.45}
+.lab{display:flex;gap:4px;margin-top:4px;font-size:9px;color:var(--mut)}.lab span{flex:1;text-align:center}
+:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px;align-items:start}.list>li{content-visibility:auto;contain-intrinsic-size:auto 118px}@media(min-width:900px){.list{grid-template-columns:1fr 1fr}}
+.p{border:1px solid var(--line);border-radius:20px;background:var(--soft)}
+.p summary{list-style:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:grid;grid-template-columns:1fr auto 18px;gap:2px 12px;padding:12px 14px;align-items:center}
+.p summary::-webkit-details-marker{display:none}
+.p .n{font-weight:650}.p .meta{font-size:12px;color:var(--mut)}
+.score{transition:none;grid-row:1/5;grid-column:2;width:56px;height:56px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--ink)}
+.score small{font-size:9px;font-weight:600;letter-spacing:.02em}
+.p[open]{border-color:var(--fg)}.p.hot{border-color:color-mix(in oklch,var(--b) 40%,var(--line))}
+.body{margin:0 14px;padding:12px 0;font-size:13px;border-top:1px dashed var(--line)}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 10px}
+.facts div{background:var(--card);border-radius:12px;padding:8px 10px}
+.facts b{display:block;font-size:14px}.facts span{font-size:11px;color:var(--mut)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0;padding:0;list-style:none}
+.tags li{background:var(--card);border-radius:99px;padding:3px 10px;font-size:12px}.tags li.rec{background:color-mix(in oklch,var(--b) 30%,transparent)}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11px;background:var(--b);color:var(--ink);margin-left:6px;font-weight:600}
+.empty{color:var(--mut);text-align:center;padding:16px 0}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px}
+.tabs button{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--g);border-color:var(--g);color:var(--ink)}
+footer{margin:22px 4px 0;font-size:12px;color:var(--mut)}footer p{margin:0 0 8px}
+
+.views{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0 4px;margin:0 0 10px}
+.views .tabs{margin:0}
+input[type=range]{min-height:0;padding:0;border:0;background:transparent;accent-color:var(--g);margin-top:8px}
+input[type=checkbox]{width:20px;min-height:0;height:20px;margin:0;accent-color:var(--g)}
+.f{margin:0 0 12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kval{float:right;font-weight:600;color:var(--fg)}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--fg);margin:0 0 12px;min-height:44px;align-self:end}
+.kres .kwho{margin:10px 0 0;color:var(--mut);font-size:13px}
+.kpill{display:inline-block;border-radius:99px;padding:2px 12px;font-size:12px;font-weight:700;color:var(--ink)}
+.ktop{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.kbig{font-size:clamp(28px,7vw,40px);font-weight:650;letter-spacing:-.03em;line-height:1.1;margin:8px 0 0}
+.ksum{margin:6px 0 0;color:var(--mut);font-size:13px}
+.kscore{width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:30px;line-height:1;color:var(--ink);flex:none}
+.kscore small{font-size:9px;font-weight:600;letter-spacing:.03em;margin-top:3px}
+.kstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kstats div{background:var(--soft);border-radius:16px;padding:10px 12px}
+.kstats b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.kstats span{font-size:11px;color:var(--mut)}
+.kbar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:14px}.kbar i{display:block;height:100%;border-radius:99px;transition:width .25s}
+.kcap{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:4px}
+.krow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.krow .d{color:var(--mut);text-align:right}.kout{font-size:11px;font-weight:700;border-radius:99px;padding:1px 9px;background:var(--b);color:var(--ink);white-space:nowrap;align-self:center}
+.kh{font-size:13px;font-weight:650;margin:16px 0 2px}
+.knote{font-size:12px;color:var(--mut);margin:10px 0 0}
+.kscale{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:4px}
+.tbl{overflow-x:auto;border-radius:16px;border:1px solid var(--line)}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th,.tbl td{padding:9px 8px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl th{background:var(--soft);color:var(--mut);font-size:11px;font-weight:600}
+.tbl td{border-top:1px solid var(--line)}
+.tbl th:nth-child(2),.tbl td:nth-child(2){text-align:left;width:100%}
+.tbl td:first-child{text-align:center;border-left:5px solid transparent;color:var(--mut)}
+.tbl tr.top td:first-child{border-left-color:var(--g)}.tbl tr.bot td:first-child{border-left-color:#e5484d}
+.tbl tr.on td{background:color-mix(in oklch,var(--a) 28%,transparent);font-weight:650}
+.tbl td:nth-child(9){font-weight:700}
+.key{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;margin-top:10px;color:var(--mut)}
+.key span::before{content:"";display:inline-block;width:5px;height:14px;margin-right:6px;vertical-align:-2px;background:var(--c)}
+.grp{border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden;background:var(--soft)}
+.grp h3{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin:0;padding:8px 14px;color:var(--ink);background:var(--c)}
+.grp button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;font:inherit;font-size:13px;padding:11px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;touch-action:manipulation}
+.grp button:hover{background:var(--card)}.grp em{font-style:normal;color:var(--mut);white-space:nowrap}
+.g-short{--c:var(--a)}.g-mid{--c:#f2b84b}.g-long{--c:#ff6a3d}
+.grps{display:grid;gap:10px}@media(min-width:900px){.grps{grid-template-columns:repeat(3,1fr)}.grps .grp{margin:0}}
+.use{margin:10px 0 0;font:inherit;font-weight:700;font-size:13px;padding:10px 14px;border-radius:12px;border:0;background:var(--g);color:var(--ink);cursor:pointer}
+.lgtag{font-size:10px;font-weight:700;border-radius:99px;padding:0 7px;margin-left:4px;border:1px solid var(--line);color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.bar i,.chev,.kbar i{transition:none}h1{animation:none;background:none;-webkit-text-fill-color:currentColor}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="brand"><svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Football with a red cross"><defs><clipPath id="bc"><circle cx="32" cy="32" r="28"/></clipPath></defs><circle cx="32" cy="32" r="28" fill="#fff"/><g clip-path="url(#bc)"><line x1="32.0" y1="23.0" x2="32.0" y2="11.0" stroke="#14201b" stroke-width="2.2"/><polygon points="32.0,11.0 22.5,4.1 26.1,-7.1 37.9,-7.1 41.5,4.1" fill="#14201b"/><line x1="44.9" y1="14.2" x2="49.6" y2="7.7" stroke="#14201b" stroke-width="2.2"/><line x1="32.0" y1="11.0" x2="44.9" y2="14.2" stroke="#14201b" stroke-width="2.2"/><line x1="44.9" y1="14.2" x2="52.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><line x1="40.6" y1="29.2" x2="52.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><polygon points="52.0,25.5 55.6,14.3 67.4,14.3 71.0,25.5 61.5,32.4" fill="#14201b"/><line x1="52.9" y1="38.8" x2="60.5" y2="41.3" stroke="#14201b" stroke-width="2.2"/><line x1="52.0" y1="25.5" x2="52.9" y2="38.8" stroke="#14201b" stroke-width="2.2"/><line x1="52.9" y1="38.8" x2="44.3" y2="49.0" stroke="#14201b" stroke-width="2.2"/><line x1="37.3" y1="39.3" x2="44.3" y2="49.0" stroke="#14201b" stroke-width="2.2"/><polygon points="44.3,49.0 56.1,49.0 59.7,60.2 50.2,67.1 40.7,60.2" fill="#14201b"/><line x1="32.0" y1="54.0" x2="32.0" y2="62.0" stroke="#14201b" stroke-width="2.2"/><line x1="44.3" y1="49.0" x2="32.0" y2="54.0" stroke="#14201b" stroke-width="2.2"/><line x1="32.0" y1="54.0" x2="19.7" y2="49.0" stroke="#14201b" stroke-width="2.2"/><line x1="26.7" y1="39.3" x2="19.7" y2="49.0" stroke="#14201b" stroke-width="2.2"/><polygon points="19.7,49.0 23.3,60.2 13.8,67.1 4.3,60.2 7.9,49.0" fill="#14201b"/><line x1="11.1" y1="38.8" x2="3.5" y2="41.3" stroke="#14201b" stroke-width="2.2"/><line x1="19.7" y1="49.0" x2="11.1" y2="38.8" stroke="#14201b" stroke-width="2.2"/><line x1="11.1" y1="38.8" x2="12.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><line x1="23.4" y1="29.2" x2="12.0" y2="25.5" stroke="#14201b" stroke-width="2.2"/><polygon points="12.0,25.5 2.5,32.4 -7.0,25.5 -3.4,14.3 8.4,14.3" fill="#14201b"/><line x1="19.1" y1="14.2" x2="14.4" y2="7.7" stroke="#14201b" stroke-width="2.2"/><line x1="12.0" y1="25.5" x2="19.1" y2="14.2" stroke="#14201b" stroke-width="2.2"/><line x1="19.1" y1="14.2" x2="32.0" y2="11.0" stroke="#14201b" stroke-width="2.2"/></g><circle cx="32" cy="32" r="28" fill="none" stroke="#14201b" stroke-width="3"/><circle cx="32" cy="32" r="11" fill="#e5484d"/><path d="M29.3 24.0 h5.3 v5.3 h5.3 v5.3 h-5.3 v5.3 h-5.3 v-5.3 h-5.3 v-5.3 h5.3 z" fill="#fff" stroke="none" stroke-width="0" stroke-linejoin="round"/></svg><h1>Injury tracker</h1></div>
+<p class="lede">Gameweek 8 &bull; injuries as reported on Thursday 22 October 2026</p>
+<nav class="views" aria-label="Sections"><div class="tabs" id="views" role="tablist"><button type="button" role="tab" data-v="inj" aria-selected="true">Injuries</button><button type="button" role="tab" data-v="calc" aria-selected="false">Impact calculator</button><button type="button" role="tab" data-v="table" aria-selected="false">League table</button></div></nav>
+<div id="v-inj" role="tabpanel">
+<div class="grid">
+<section class="tile hero pl" id="hero" aria-live="polite"></section>
+<section class="tile pl"><h2>Most injuries</h2><p class="sub">Players out or doubtful.</p><ul class="rank most" id="most"></ul></section>
+<section class="tile pl"><h2>Worst impact</h2><p class="sub">Combined injury score.</p><ul class="rank worst" id="worst"></ul></section>
+<section class="tile span4 span2 pl"><h2>Gameweek 8 fixtures</h2><p class="sub">With injured players on each side. Times are UK local.</p><ul class="fx" id="fx"></ul></section>
+<section class="tile span4 span2">
+  <h2>Injured players</h2><p class="sub">Pick a league, then tap a player for nationality, injury detail and return time. Premier League cards also show wage, contract and how his contract value falls each week out.</p>
+  <div class="tabs" id="tabs" role="tablist" aria-label="League"></div>
+  <div class="filters">
+    <div><label for="q">Search</label><div class="sw"><input id="q" type="text" inputmode="search" enterkeyhint="search" placeholder="Search all leagues: player, club, injury or country" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" id="qx" aria-label="Clear search" hidden>&times;</button></div></div>
+    <div><label for="fc">Club</label><select id="fc"></select></div>
+    <div><label for="so">Sort by</label><select id="so"><option value="impact">Highest injury score</option><option value="weeks">Longest out</option><option value="wage">Highest wage</option><option value="lost">Most wages lost</option><option value="age">Oldest</option><option value="name">Name</option></select></div>
+  </div>
+  <p class="count" id="count" aria-live="polite"></p>
+  <ul class="list" id="list"></ul>
+  <p class="empty" id="empty" hidden>No players match.</p>
+</section>
+</div>
+</div>
+<div id="v-calc" role="tabpanel" hidden>
+<div class="grid">
+<section class="tile span2">
+  <h2>Impact calculator</h2><p class="sub">Pick a club and a player to see how long he is out, which league games he misses and his Impact Score out of 10. Type a name to pick from the injured list, or fill it in yourself.</p>
+  <form id="kform" onsubmit="return false" autocomplete="off">
+    <div class="f"><label for="kteam">Club</label><select id="kteam"></select></div>
+    <div class="f"><label for="kplayer">Player</label><input id="kplayer" type="text" list="kplist" placeholder="e.g. Bukayo Saka" autocapitalize="off" spellcheck="false"><datalist id="kplist"></datalist></div>
+    <div class="f"><label for="kinj">Injury</label><select id="kinj"></select></div>
+    <div class="two">
+      <div class="f"><label for="kmins">Minutes played this season</label><input id="kmins" type="number" inputmode="numeric" min="0" placeholder="e.g. 360"></div>
+      <div class="f"><label for="kga">Goals + assists</label><input id="kga" type="number" inputmode="numeric" min="0" placeholder="e.g. 3"></div>
+    </div>
+    <div class="f" style="margin:0"><label for="kimp">How hard to replace <span class="kval" id="kimpv"></span></label><input id="kimp" type="range" min="0" max="10" value="5"></div>
+  </form>
+</section>
+<section class="tile span2 kres" aria-live="polite">
+  <h2>Result</h2>
+  <div class="ktop"><div><span class="kpill" id="kstatus"></span><p class="kwho" id="kwho"></p><p class="kbig" id="kweeks"></p></div>
+  <div class="kscore mono" id="kscore" role="img"><span id="kscorev">-</span><small>IMPACT SCORE</small></div></div>
+  <p class="ksum" id="ksum"></p>
+  <div class="kstats"><div><b id="kgames">-</b><span>League games missed</span></div><div><b id="kpct">-</b><span>Of the season</span></div></div>
+  <div class="kbar" aria-hidden="true"><i id="kfill"></i></div><div class="kcap"><span>Back soon</span><span>Season over</span></div>
+  <div id="kparts"></div><div id="kmissed"></div>
+</section>
+<section class="tile span2">
+  <h2>Injury-prone points</h2><p class="sub">Scores the player above out of 100 for how often he gets hurt. Higher means more injury-prone. Fill in what you know.</p>
+  <div class="two">
+    <div class="f"><label for="kpi">Injuries in last 2 seasons</label><input id="kpi" type="number" inputmode="numeric" min="0" placeholder="e.g. 3"></div>
+    <div class="f"><label for="kpg">League games missed last season</label><input id="kpg" type="number" inputmode="numeric" min="0" placeholder="e.g. 12"></div>
+    <div class="f" style="margin:0"><label for="kpa">Age</label><input id="kpa" type="number" inputmode="numeric" min="15" max="45" placeholder="e.g. 29"></div>
+    <label class="chk" for="kpr"><input id="kpr" type="checkbox"> Same injury before</label>
+  </div>
+</section>
+<section class="tile span2 kres" aria-live="polite">
+  <h2>Injury-prone result</h2>
+  <div class="ktop"><div><span class="kpill" id="kpband">Low</span><p class="kwho" id="kpwho"></p></div>
+  <div class="kscore mono" id="kpscore" role="img"><span id="kpscorev">0</span><small>OUT OF 100</small></div></div>
+  <p class="ksum" id="kpsum"></p>
+  <div class="kbar" aria-hidden="true"><i id="kpfill"></i></div>
+  <div class="kscale"><span>0 Low</span><span>25 Moderate</span><span>50 High</span><span>75 Very high</span></div>
+  <div id="kpparts"></div>
+</section>
+<section class="tile span4 span2">
+  <h2>Injury types</h2><p class="sub">Tap an injury type to load it into the calculator.</p>
+  <div class="grps" id="kinjlist"></div>
+</section>
+</div>
+</div>
+<div id="v-table" role="tabpanel" hidden>
+<div class="grid"><section class="tile span4 span2">
+  <h2>Premier League table</h2><p class="sub" id="ktblnote"></p>
+  <div class="tbl"><table id="ktbl"><thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Out</th></tr></thead><tbody></tbody></table></div>
+  <div class="key"><span style="--c:var(--g)">Top four</span><span style="--c:#e5484d">Bottom three</span><span style="--c:var(--a)">Selected in calculator</span></div>
+  <p class="knote">&ldquo;Out&rdquo; is the number of injured or doubtful players in this tracker.</p>
+</section></div>
+</div>
+<footer>
+  <p><b>Injury score</b> (0 to 10) combines how long a player is out with how important he is to his team. Higher means a bigger blow. A club's score is the sum of its players' scores.</p>
+  <p><b>Coverage:</b> Premier League clubs with a published injury report are listed (Manchester City, Everton, Fulham, Crystal Palace and Coventry City had none found, so a missing club does not mean nobody is hurt). Championship and League One come from club and news reports published 10 to 22 October 2026 (soccernews.com, Championship Insights, The72, the Chad and Last Word On Football). League One is only partly covered and no current League Two injury reports were found, so those lists are incomplete. Wages are not shown for the three lower leagues. Nationalities were filled in from memory; ones I was less sure of say so when you open the card. Return times in the lower leagues are estimates, and some source dates looked stale, so treat them as a guide.</p>
+  <p><b>Impact calculator:</b> Impact Score = 40% minutes share + 30% share of team goals and assists + 20% how hard he is to replace + 10% difficulty of the fixtures he misses (weights from the original calculator, v1.0). Missing numbers count as zero, so add minutes and goals + assists for a full score. Games missed use the Premier League fixtures loaded here, then about one game a week. Time-out ranges for injury types are rough typical values. Injury-prone points and the Impact Score are estimates. Independent fan project, not affiliated with or endorsed by the Premier League or any club. Not a betting model. League table after 7 games each as of 20 October 2026 (Sky Sports and Tribuna). Managers are from the Premier League&rsquo;s 2026/27 list, so check for changes after 22 October.</p>
+  <p>This is a snapshot, not a live feed. Edit the <code>DATA</code> and <code>FIX</code> arrays in the script to refresh it. Injuries are from club press conferences as reported by Rotowire, Fantasy Football Scout, Fantasy Football Hub and Squawka on 21 to 22 October 2026. Fixtures and win chances are from Sportradar.</p>
+  <p>Only players whose club could be confirmed are listed. Ages are as of 22 October 2026. Nationality is the senior national team (Femi Azeez is listed as English but is also reported as Nigerian, so check which side he represents). Past injuries are from memory, so check them before publishing. &ldquo;est.&rdquo; weeks are estimates and the importance rating is my own judgement. Wages are unofficial weekly estimates in pounds, checked on 22 October 2026. Where Capology figures were available they are used and labelled; otherwise they come from SalarySport, so the two sources can differ. Pep Chavarría, Zadok Yohanna and Femi Azeez are shown without a wage because only outdated or placeholder figures exist. Contract end dates assume 30 June of the final year. &ldquo;Contract value left&rdquo; is his weekly wage multiplied by the weeks left on his deal, so it falls by one week&rsquo;s wage for every week he is out. Not medical advice.</p>
+</footer>
+</div>
+<script>
+(function(){
+"use strict";
+/* w = weeks out (est = no return date given) · imp = importance 0 to 1 · nat/f = nationality and flag */
+var DATA=[
+ {n:"Bukayo Saka",c:"Arsenal",age:25,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Quad injury",w:6,est:1,imp:.95,st:"Out",h:[{i:"Hamstring tear",y:"2024-25"}]},
+ {n:"William Saliba",c:"Arsenal",age:25,nat:"France",f:"\uD83C\uDDEB\uD83C\uDDF7",inj:"Awaiting MRI",w:3,est:1,imp:.9,st:"Doubt",h:[]},
+ {n:"Piero Hincapié",c:"Arsenal",age:24,nat:"Ecuador",f:"\uD83C\uDDEA\uD83C\uDDE8",inj:"Ankle injury",w:1.5,est:1,imp:.6,st:"Doubt",h:[]},
+ {n:"Antoine Semenyo",c:"Manchester City",age:26,nat:"Ghana",f:"\uD83C\uDDEC\uD83C\uDDED",inj:"Knee injury",w:8,imp:.9,st:"Out",h:[]},
+ {n:"Nico O'Reilly",c:"Manchester City",age:21,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Back problem",w:1,est:1,imp:.6,st:"Doubt",h:[]},
+ {n:"Jeremie Frimpong",c:"Liverpool",age:25,nat:"Netherlands",f:"\uD83C\uDDF3\uD83C\uDDF1",inj:"Hamstring injury",w:3,est:1,imp:.7,st:"Out",h:[{i:"Hamstring injury",y:"2025-26"}]},
+ {n:"Dominik Szoboszlai",c:"Liverpool",age:25,nat:"Hungary",f:"\uD83C\uDDED\uD83C\uDDFA",inj:"Hamstring injury",w:1.5,est:1,imp:.85,st:"Doubt",h:[]},
+ {n:"Lisandro Martínez",c:"Manchester United",age:28,nat:"Argentina",f:"\uD83C\uDDE6\uD83C\uDDF7",inj:"Thigh problem",w:3,est:1,imp:.8,st:"Out",h:[{i:"Foot fracture",y:"2022-23"},{i:"Knee ligament",y:"2024-25"}]},
+ {n:"Luke Shaw",c:"Manchester United",age:31,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Unspecified",w:2,est:1,imp:.6,st:"Doubt",h:[]},
+ {n:"Kobbie Mainoo",c:"Manchester United",age:21,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Unspecified",w:2,est:1,imp:.7,st:"Doubt",h:[]},
+ {n:"Reece James",c:"Chelsea",age:26,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Knee injury",w:10,imp:.85,st:"Out",h:[{i:"Hamstring injuries",y:"2022 to 2025"},{i:"Knee",y:"2022-23"}]},
+ {n:"Jamie Bynoe-Gittens",c:"Chelsea",age:22,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Ankle / foot",w:1.3,imp:.55,st:"Out",h:[]},
+ {n:"Pep Chavarría",c:"Chelsea",age:28,nat:"Spain",f:"\uD83C\uDDEA\uD83C\uDDF8",inj:"Being checked",w:1,est:1,imp:.35,st:"Doubt",h:[]},
+ {n:"Kaoru Mitoma",c:"Brighton",age:29,nat:"Japan",f:"\uD83C\uDDEF\uD83C\uDDF5",inj:"Hamstring injury",w:1.3,imp:.7,st:"Out",h:[{i:"Hamstring",y:"2024-25"}]},
+ {n:"Yankuba Minteh",c:"Brighton",age:22,nat:"Gambia",f:"\uD83C\uDDEC\uD83C\uDDF2",inj:"Leg injury",w:5,imp:.65,st:"Out",h:[]},
+ {n:"Mats Wieffer",c:"Brighton",age:26,nat:"Netherlands",f:"\uD83C\uDDF3\uD83C\uDDF1",inj:"Knee injury",w:4,est:1,imp:.6,st:"Out",h:[]},
+ {n:"Evan Ferguson",c:"Brighton",age:22,nat:"Ireland",f:"\uD83C\uDDEE\uD83C\uDDEA",inj:"Ankle injury",w:3,est:1,imp:.5,st:"Out",h:[{i:"Ankle",y:"2023-24"}]},
+ {n:"Stefanos Tzimas",c:"Brighton",age:20,nat:"Greece",f:"\uD83C\uDDEC\uD83C\uDDF7",inj:"Knee injury",w:4,est:1,imp:.3,st:"Out",h:[]},
+ {n:"Zadok Yohanna",c:"Brighton",age:19,nat:"Nigeria",f:"\uD83C\uDDF3\uD83C\uDDEC",inj:"Fitness / rehab",w:1.3,imp:.3,st:"Out",h:[]},
+ {n:"Femi Azeez",c:"Brighton",age:25,nat:"England",f:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",inj:"Hamstring injury",w:1.3,imp:.3,st:"Out",h:[]},
+ {n:"Nicolò Savona",c:"Nottingham Forest",age:23,nat:"Italy",f:"\uD83C\uDDEE\uD83C\uDDF9",inj:"Knee injury",w:1.3,imp:.5,st:"Out",h:[]},
+ {n:"Igor Jesus",c:"Nottingham Forest",age:25,nat:"Brazil",f:"\uD83C\uDDE7\uD83C\uDDF7",inj:"Calf injury",w:2,est:1,imp:.7,st:"Out",h:[]},
+ {n:"Christos Tzolis",c:"Arsenal",age:null,nat:"Greece",f:"",inj:"Thigh",w:1.4,imp:.5,st:"Out",h:[]},
+ {n:"George Hemmings",c:"Aston Villa",age:null,nat:"England",f:"",inj:"Knee",w:0.5,imp:.5,st:"Doubt",h:[],note:"50% doubt"},
+ {n:"Modou Keba Cisse",c:"Aston Villa",age:null,nat:"Senegal",f:"",inj:"Groin",w:0.5,imp:.5,st:"Out",h:[]},
+ {n:"Ross Barkley",c:"Aston Villa",age:null,nat:"England",f:"",inj:"Upper leg/hip",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Possible; reported after Champions League game"},
+ {n:"Veljko Milosavljevic",c:"Bournemouth",age:null,nat:"Serbia",f:"",inj:"Knee",w:1.3,imp:.5,st:"Out",h:[]},
+ {n:"Eli Junior Kroupi",c:"Bournemouth",age:null,nat:"France",f:"",inj:"Foot",w:2.4,imp:.5,st:"Out",h:[]},
+ {n:"Alex Scott",c:"Bournemouth",age:null,nat:"England",f:"",inj:"Thigh",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Jannik Schuster",c:"Brentford",age:null,nat:"Germany",f:"",inj:"Ankle",w:0.5,imp:.5,st:"Doubt",h:[],note:"Back on grass, needs checks"},
+ {n:"Josh Dasilva",c:"Brentford",age:null,nat:"England",f:"",inj:"Thigh",w:1.3,imp:.5,st:"Out",h:[]},
+ {n:"Kaye Furo",c:"Brentford",age:null,nat:"Belgium",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Antoni Milambo",c:"Brentford",age:null,nat:"Netherlands",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Pascal Struijk",c:"Brighton",age:null,nat:"Netherlands",f:"",inj:"Fitness check",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Red card overturned"},
+ {n:"Emi Martinez",c:"Chelsea",age:null,nat:"Argentina",f:"",inj:"Jaw fracture (surgery)",w:2,est:1,imp:.5,st:"Out",h:[],note:"Hurt at Everton on 17 Oct. Reports say at least 40 days; he says a few weeks"},
+ {n:"Emmanuel Emegha",c:"Chelsea",age:null,nat:"Netherlands",f:"",inj:"Training setback",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Nobel Mendy",c:"Hull City",age:null,nat:"France",f:"",inj:"Groin",w:1.0,imp:.5,st:"Out",h:[]},
+ {n:"Lucas Gourna-Douath",c:"Hull City",age:null,nat:"France",f:"",inj:"Calf",w:0.5,imp:.5,st:"Out",h:[],note:"MRI planned"},
+ {n:"Mohamed-Ali Cho",c:"Hull City",age:null,nat:"France",f:"",inj:"Thigh",w:0.5,imp:.5,st:"Out",h:[]},
+ {n:"Jack Butland",c:"Hull City",age:null,nat:"England",f:"",inj:"Arm/elbow",w:0.5,imp:.5,st:"Doubt",h:[],note:"25% doubt"},
+ {n:"Eliot Matazo",c:"Hull City",age:null,nat:"Belgium",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Oscar Zambrano",c:"Hull City",age:null,nat:"Ecuador",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Charlie Hughes",c:"Hull City",age:null,nat:"England",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Darko Gyabi",c:"Hull City",age:null,nat:"England",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Sasa Lukic",c:"Ipswich Town",age:null,nat:"Serbia",f:"",inj:"Groin",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Jack Taylor",c:"Ipswich Town",age:null,nat:"Republic of Ireland",f:"",inj:"Knee",w:0.5,imp:.5,st:"Out",h:[]},
+ {n:"Daniel James",c:"Leeds United",age:null,nat:"Wales",f:"",inj:"Lower back",w:0.5,imp:.5,st:"Doubt",h:[],note:"50% doubt"},
+ {n:"Joe Rodon",c:"Leeds United",age:null,nat:"Wales",f:"",inj:"Thigh",w:1.3,imp:.5,st:"Out",h:[]},
+ {n:"Alexander Isak",c:"Liverpool",age:null,nat:"Sweden",f:"",inj:"Thigh",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"25% flag"},
+ {n:"Cody Gakpo",c:"Liverpool",age:null,nat:"Netherlands",f:"",inj:"Ankle",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"25% flag"},
+ {n:"Hugo Ekitike",c:"Liverpool",age:null,nat:"France",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Conor Bradley",c:"Liverpool",age:null,nat:"Northern Ireland",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Giovanni Leoni",c:"Liverpool",age:null,nat:"Italy",f:"",inj:"Out",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Victor Munoz",c:"Liverpool",age:null,nat:"Spain",f:"",inj:"Knee",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Benjamin Sesko",c:"Manchester United",age:null,nat:"Slovenia",f:"",inj:"Shin",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Still having checks"},
+ {n:"Ayden Heaven",c:"Manchester United",age:null,nat:"England",f:"",inj:"Illness",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Anthony Elanga",c:"Newcastle United",age:null,nat:"Sweden",f:"",inj:"Injured",w:0.5,imp:.5,st:"Out",h:[]},
+ {n:"Tino Livramento",c:"Newcastle United",age:null,nat:"England",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Jacob Ramsey",c:"Newcastle United",age:null,nat:"England",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Bazoumana Toure",c:"Newcastle United",age:null,nat:"Ivory Coast",f:"",inj:"Improving",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Late decision"},
+ {n:"Ewen Jaouen",c:"Newcastle United",age:null,nat:"France",f:"",inj:"Injured",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Brian Brobbey",c:"Sunderland",age:null,nat:"Netherlands",f:"",inj:"Hamstring",w:2,est:1,imp:.5,st:"Doubt",h:[],note:"Doubt for Saturday"},
+ {n:"Wilson Isidor",c:"Sunderland",age:null,nat:"France",f:"",inj:"Injured",w:0.5,imp:.5,st:"Out",h:[]},
+ {n:"Pedro Porro",c:"Tottenham",age:null,nat:"Spain",f:"",inj:"Hamstring",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Dejan Kulusevski",c:"Tottenham",age:null,nat:"Sweden",f:"",inj:"Knee",w:2,est:1,imp:.5,st:"Out",h:[],note:"Progressing"},
+ {n:"Xavi Simons",c:"Tottenham",age:null,nat:"Netherlands",f:"",inj:"Knee",w:2,est:1,imp:.5,st:"Out",h:[]},
+ {n:"Wilson Odobert",c:"Tottenham",age:null,nat:"France",f:"",inj:"Knee",w:2,est:1,imp:.5,st:"Out",h:[]}
+];
+var FIX=[
+ {h:"Ipswich Town",a:"Nottingham Forest",t:"Fri 23 Oct, 8:00 PM",p:[31,27,42]},
+ {h:"Aston Villa",a:"Manchester City",t:"Sat 24 Oct, 12:30 PM",p:[20,22,58]},
+ {h:"Arsenal",a:"Everton",t:"Sat 24 Oct, 3:00 PM",p:[67,20,13]},
+ {h:"Coventry City",a:"Fulham",t:"Sat 24 Oct, 3:00 PM",p:[31,27,41]},
+ {h:"Chelsea",a:"Tottenham",t:"Sat 24 Oct, 5:30 PM",p:[57,22,21]},
+ {h:"Crystal Palace",a:"Newcastle United",t:"Sun 25 Oct, 2:00 PM",p:[34,26,41]},
+ {h:"Hull City",a:"Brentford",t:"Sun 25 Oct, 2:00 PM",p:[20,23,57]},
+ {h:"Liverpool",a:"Brighton",t:"Sun 25 Oct, 2:00 PM",p:[45,25,30]},
+ {h:"Manchester United",a:"Bournemouth",t:"Sun 25 Oct, 2:00 PM",p:[48,25,27]},
+ {h:"Sunderland",a:"Leeds United",t:"Sun 25 Oct, 4:30 PM",p:[31,29,40]}
+];
+var FLAG={
+ "England":"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F",
+ "Scotland":"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",
+ "Wales":"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73\uDB40\uDC7F",
+ "Northern Ireland":"\uD83C\uDDEC\uD83C\uDDE7",
+ "Republic of Ireland":"\uD83C\uDDEE\uD83C\uDDEA",
+ "France":"\uD83C\uDDEB\uD83C\uDDF7",
+ "Spain":"\uD83C\uDDEA\uD83C\uDDF8",
+ "Netherlands":"\uD83C\uDDF3\uD83C\uDDF1",
+ "Germany":"\uD83C\uDDE9\uD83C\uDDEA",
+ "Italy":"\uD83C\uDDEE\uD83C\uDDF9",
+ "Portugal":"\uD83C\uDDF5\uD83C\uDDF9",
+ "Belgium":"\uD83C\uDDE7\uD83C\uDDEA",
+ "Sweden":"\uD83C\uDDF8\uD83C\uDDEA",
+ "Norway":"\uD83C\uDDF3\uD83C\uDDF4",
+ "Denmark":"\uD83C\uDDE9\uD83C\uDDF0",
+ "Serbia":"\uD83C\uDDF7\uD83C\uDDF8",
+ "Slovenia":"\uD83C\uDDF8\uD83C\uDDEE",
+ "Slovakia":"\uD83C\uDDF8\uD83C\uDDF0",
+ "Lithuania":"\uD83C\uDDF1\uD83C\uDDF9",
+ "Hungary":"\uD83C\uDDED\uD83C\uDDFA",
+ "Greece":"\uD83C\uDDEC\uD83C\uDDF7",
+ "Austria":"\uD83C\uDDE6\uD83C\uDDF9",
+ "Kosovo":"\uD83C\uDDFD\uD83C\uDDF0",
+ "Argentina":"\uD83C\uDDE6\uD83C\uDDF7",
+ "Ecuador":"\uD83C\uDDEA\uD83C\uDDE8",
+ "Brazil":"\uD83C\uDDE7\uD83C\uDDF7",
+ "Mexico":"\uD83C\uDDF2\uD83C\uDDFD",
+ "United States":"\uD83C\uDDFA\uD83C\uDDF8",
+ "Canada":"\uD83C\uDDE8\uD83C\uDDE6",
+ "Australia":"\uD83C\uDDE6\uD83C\uDDFA",
+ "New Zealand":"\uD83C\uDDF3\uD83C\uDDFF",
+ "Japan":"\uD83C\uDDEF\uD83C\uDDF5",
+ "South Korea":"\uD83C\uDDF0\uD83C\uDDF7",
+ "Senegal":"\uD83C\uDDF8\uD83C\uDDF3",
+ "Ghana":"\uD83C\uDDEC\uD83C\uDDED",
+ "Gambia":"\uD83C\uDDEC\uD83C\uDDF2",
+ "Nigeria":"\uD83C\uDDF3\uD83C\uDDEC",
+ "Ivory Coast":"\uD83C\uDDE8\uD83C\uDDEE",
+ "Morocco":"\uD83C\uDDF2\uD83C\uDDE6",
+ "Tunisia":"\uD83C\uDDF9\uD83C\uDDF3",
+ "Kenya":"\uD83C\uDDF0\uD83C\uDDEA",
+ "Zimbabwe":"\uD83C\uDDFF\uD83C\uDDFC",
+ "Burkina Faso":"\uD83C\uDDE7\uD83C\uDDEB",
+ "Mali":"\uD83C\uDDF2\uD83C\uDDF1"
+};
+var LOWER=[
+ {lg:"Championship",c:"Birmingham City",n:"Marc Leonard",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Scotland",f:"",h:[]},
+ {lg:"Championship",c:"Birmingham City",n:"Seung-ho Paik",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"South Korea",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Ryoya Morishita",inj:"Ankle / muscle",w:1,est:1,imp:.5,st:"Out",nat:"Japan",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Adam Forshaw",inj:"Hip (surgery 2 Nov)",w:12,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Lewis Miller",inj:"Achilles tendon",w:2,est:1,imp:.5,st:"Out",nat:"Australia",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Sondre Tronstad",inj:"Cruciate ligament",w:26,est:1,imp:.5,st:"Out",nat:"Norway",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Yuki Ohashi",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Japan",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Yuri Ribeiro",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Portugal",f:"",h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Matty Litherland",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Blackburn Rovers",n:"Mathias Jorgensen",inj:"Fitness work",w:2,est:1,imp:.5,st:"Out",nat:"Denmark",f:"",h:[]},
+ {lg:"Championship",c:"Bolton Wanderers",n:"Chris Forino",inj:"Groin (recurrence)",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Bristol City",n:"Rob Dickie",inj:"Knee",w:3,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Bristol City",n:"Lorent Tolaj",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Kosovo",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Bristol City",n:"Noah Eile",inj:"Illness",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Austria",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Burnley",n:"Louis Jordan Beyer",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Germany",f:"",h:[]},
+ {lg:"Championship",c:"Burnley",n:"Hannibal Mejbri",inj:"Hamstring",w:11,est:1,imp:.5,st:"Out",nat:"Tunisia",f:"",h:[]},
+ {lg:"Championship",c:"Cardiff City",n:"Calum Chambers",inj:"Knee",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Cardiff City",n:"Rubin Colwill",inj:"Ankle",w:2,est:1,imp:.5,st:"Out",nat:"Wales",f:"",h:[]},
+ {lg:"Championship",c:"Cardiff City",n:"Dylan Lawlor",inj:"Hamstring",w:2,est:1,imp:.5,st:"Out",nat:"Wales",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Charlton Athletic",n:"Collins Sichenje",inj:"Knee (out for season)",w:30,est:1,imp:.5,st:"Out",nat:"Kenya",f:"",h:[]},
+ {lg:"Championship",c:"Charlton Athletic",n:"Nathaniel Chalobah",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Charlton Athletic",n:"Matt Godden",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Patrick Agyemang",inj:"Achilles tendon",w:10,est:1,imp:.5,st:"Out",nat:"United States",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Matt Clarke",inj:"Calf",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Derry Murkin",inj:"Hamstring (surgery)",w:6,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Craig Forsyth",inj:"Knee",w:11,est:1,imp:.5,st:"Out",nat:"Scotland",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Jacob Widell Zetterstrom",inj:"Knee",w:2,est:1,imp:.5,st:"Out",nat:"Sweden",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Charlie Taylor",inj:"Hamstring",w:3,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Eiran Cashin",inj:"Calf",w:2,est:1,imp:.5,st:"Out",nat:"Republic of Ireland",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Max Johnston",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"Scotland",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Sondre Langas",inj:"Groin",w:11,est:1,imp:.5,st:"Out",nat:"Norway",f:"",h:[]},
+ {lg:"Championship",c:"Derby County",n:"Lewis Travis",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Lincoln City",n:"Tendayi Darikwa",inj:"Cruciate ligament (out for season)",w:30,est:1,imp:.5,st:"Out",nat:"Zimbabwe",f:"",h:[]},
+ {lg:"Championship",c:"Lincoln City",n:"Mason Melia",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Wales",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Middlesbrough",n:"Alfie Jones",inj:"Calf",w:1.5,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Middlesbrough",n:"David Strelec",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"Slovakia",f:"",h:[]},
+ {lg:"Championship",c:"Middlesbrough",n:"Rokas Pukstas",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"Lithuania",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Massimo Luongo",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Australia",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Mihailo Ivanovic",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Serbia",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Mathis Servais",inj:"Hamstring (setback)",w:3,est:1,imp:.5,st:"Out",nat:"Belgium",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Josh Coburn",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Casper De Norre",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Belgium",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Lukas Jensen",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Denmark",f:"",h:[]},
+ {lg:"Championship",c:"Millwall",n:"Tairyk Arconte",inj:"Ankle",w:0.5,est:1,imp:.5,st:"Doubt",nat:"France",f:"",h:[]},
+ {lg:"Championship",c:"Norwich City",n:"Ali Ahmed",inj:"Ligament",w:2,est:1,imp:.5,st:"Out",nat:"Canada",f:"",h:[]},
+ {lg:"Championship",c:"Norwich City",n:"Gabe Forsyth",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Norwich City",n:"Mo Toure",inj:"Shoulder (surgery)",w:11,est:1,imp:.5,st:"Out",nat:"France",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Norwich City",n:"Papa Diallo",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"Senegal",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Norwich City",n:"Kenny McLean",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"Scotland",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Marko Kosznovszky",inj:"Cruciate ligament",w:26,est:1,imp:.5,st:"Out",nat:"Hungary",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Connor Ogilvie",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Josh Murphy",inj:"Groin (after surgery)",w:2.5,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Luke Brooke-Smith",inj:"Ankle (out for season)",w:30,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Conor Shaughnessy",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Republic of Ireland",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Keshi Anderson",inj:"Hamstring",w:5,est:1,imp:.5,st:"Out",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"John Swift",inj:"Knee",w:5,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Portsmouth",n:"Colby Bishop",inj:"Knee",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Preston North End",n:"Alistair McCann",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Northern Ireland",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Preston North End",n:"Caleb Wiley",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"United States",f:"",h:[]},
+ {lg:"Championship",c:"Preston North End",n:"Liam Gibbs",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Preston North End",n:"Harry Clarke",inj:"Hamstring",w:5,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Preston North End",n:"Liam Lindsay",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Scotland",f:"",h:[]},
+ {lg:"Championship",c:"Queens Park Rangers",n:"Karamoko Dembele",inj:"Cruciate ligament",w:26,est:1,imp:.5,st:"Out",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Queens Park Rangers",n:"Ilias Chair",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Morocco",f:"",h:[]},
+ {lg:"Championship",c:"Queens Park Rangers",n:"Amadou Mbengue",inj:"Knee",w:2,est:1,imp:.5,st:"Out",nat:"Senegal",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Queens Park Rangers",n:"Richard Kone",inj:"Knee",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Ivory Coast",f:"",h:[]},
+ {lg:"Championship",c:"Sheffield United",n:"Femi Seriki",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Sheffield United",n:"Matt Doherty",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Republic of Ireland",f:"",h:[]},
+ {lg:"Championship",c:"Southampton",n:"Flynn Downes",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Southampton",n:"Cyle Larin",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Canada",f:"",h:[]},
+ {lg:"Championship",c:"Stoke City",n:"Aaron Cresswell",inj:"Knee",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Stoke City",n:"Ato Ampah",inj:"Knee (surgery)",w:12,est:1,imp:.5,st:"Out",nat:"Ghana",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Stoke City",n:"Svante Ingelsson",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Sweden",f:"",h:[]},
+ {lg:"Championship",c:"Stoke City",n:"Sam Gallagher",inj:"Muscle injury",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Stoke City",n:"Eric Junior Bocat",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"France",f:"",h:[]},
+ {lg:"Championship",c:"Swansea City",n:"Cameron Burgess",inj:"Cruciate ligament (out for season)",w:30,est:1,imp:.5,st:"Out",nat:"Australia",f:"",h:[]},
+ {lg:"Championship",c:"Swansea City",n:"Josh Key",inj:"Hamstring",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Watford",n:"Travis Akomeah",inj:"Foot",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Watford",n:"Jeremy Ngakia",inj:"Thigh",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Watford",n:"Kwadwo Baah",inj:"Thigh",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Ghana",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Watford",n:"Edoardo Bove",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Italy",f:"",h:[]},
+ {lg:"Championship",c:"Watford",n:"Iker Bravo",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Spain",f:"",h:[]},
+ {lg:"Championship",c:"West Bromwich Albion",n:"Mikey Johnston",inj:"Leg",w:2,est:1,imp:.5,st:"Out",nat:"Republic of Ireland",f:"",h:[]},
+ {lg:"Championship",c:"West Bromwich Albion",n:"Nolan Galves",inj:"Cruciate ligament (out for season)",w:30,est:1,imp:.5,st:"Out",nat:"France",f:"",h:[]},
+ {lg:"Championship",c:"West Bromwich Albion",n:"Toby Collyer",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"West Ham United",n:"Adama Traore",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Spain",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Raul Jimenez",inj:"Knee",w:11,est:1,imp:.5,st:"Out",nat:"Mexico",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Rodrigo Gomes",inj:"Ankle",w:2,est:1,imp:.5,st:"Out",nat:"Portugal",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Toti Gomes",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Portugal",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Adam Armstrong",inj:"Back",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Bertrand Traore",inj:"Hamstring",w:2,est:1,imp:.5,st:"Out",nat:"Burkina Faso",f:"",h:[]},
+ {lg:"Championship",c:"Wolverhampton Wanderers",n:"Boubacar Traore",inj:"Calf",w:2,est:1,imp:.5,st:"Out",nat:"Mali",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Josh Windass",inj:"Calf",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Liberato Cacace",inj:"Calf",w:2,est:1,imp:.5,st:"Out",nat:"New Zealand",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"George Thomason",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Sebastian Revan",inj:"Hamstring",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",nv:1,h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Max Cleworth",inj:"Hamstring",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Nathan Broadhead",inj:"Thigh",w:2,est:1,imp:.5,st:"Out",nat:"Wales",f:"",h:[]},
+ {lg:"Championship",c:"Wrexham",n:"Ben Sheaf",inj:"Muscle injury",w:0.5,est:1,imp:.5,st:"Doubt",nat:"England",f:"",h:[]},
+ {lg:"League One",c:"Mansfield Town",n:"David McGoldrick",inj:"Knee",w:2,est:1,imp:.5,st:"Out",nat:"Republic of Ireland",f:"",h:[]},
+ {lg:"League One",c:"Mansfield Town",n:"Baily Cargill",inj:"Unspecified",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"League One",c:"Mansfield Town",n:"Lucas Akins",inj:"Unspecified",w:2,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"League One",c:"Mansfield Town",n:"Elliott Hewitt",inj:"Unspecified",w:0.5,est:1,imp:.5,st:"Doubt",nat:"Wales",f:"",h:[]},
+ {lg:"League One",c:"Oxford United",n:"Ruben Rooksen",inj:"Unspecified (out since pre-season)",w:4,est:1,imp:.5,st:"Out",nat:"Netherlands",f:"",nv:1,h:[]},
+ {lg:"League One",c:"Oxford United",n:"Jamie McDonnell",inj:"Hamstring (out for the calendar year)",w:10,est:1,imp:.5,st:"Out",nat:"England",f:"",nv:1,h:[]},
+ {lg:"League One",c:"Oxford United",n:"Jeon Jin-woo",inj:"Back (back in training)",w:1,est:1,imp:.5,st:"Doubt",nat:"South Korea",f:"",h:[]},
+ {lg:"League One",c:"Bradford City",n:"Josh Neufville",inj:"Hamstring",w:3,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]},
+ {lg:"League One",c:"Bradford City",n:"Tyreik Wright",inj:"Quad (out for the calendar year)",w:10,est:1,imp:.5,st:"Out",nat:"England",f:"",h:[]}
+];
+/* PAY = [weekly wage in GBP thousands (null = not reported), contract end year, source]. Unofficial estimates, checked 22 Oct 2026. */
+var PAY={
+"Bukayo Saka":[300,2031,"Capology"],"William Saliba":[250,2030,"Capology"],"Piero Hincapié":[82,2029,"SalarySport"],
+"Antoine Semenyo":[150,2031,"Capology"],"Nico O'Reilly":[30,2030,"Capology"],
+"Jeremie Frimpong":[200,2030,"SalarySport"],"Dominik Szoboszlai":[145,2028,"SalarySport"],
+"Lisandro Martínez":[120,2027,"SalarySport"],"Luke Shaw":[200,2027,"SalarySport"],"Kobbie Mainoo":[150,2027,"SalarySport"],
+"Reece James":[200,2032,"Capology"],"Jamie Bynoe-Gittens":[125,2032,"SalarySport"],"Pep Chavarría":[null,2031,null],
+"Kaoru Mitoma":[87,2027,"SalarySport"],"Yankuba Minteh":[37,2029,"SalarySport"],"Mats Wieffer":[54,2029,"SalarySport"],
+"Evan Ferguson":[52,2029,"SalarySport"],"Stefanos Tzimas":[18,2030,"SalarySport"],"Zadok Yohanna":[null,2031,null],"Femi Azeez":[null,2030,null],
+"Nicolò Savona":[64,2030,"SalarySport"],"Igor Jesus":[50,2029,"Capology"]};
+var NOW=new Date();
+var LEAGUES=["Premier League","Championship","League One","League Two"],curLg="Premier League";
+function money(k){return "\u00A3"+Math.round(k)+"k"}
+function gbp(v){return "\u00A3"+Math.round(v).toLocaleString("en-GB")}
+var $=function(i){return document.getElementById(i)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function heat(s){var t=Math.min(1,Math.max(0,s/10)),k=Math.pow(t,.8);
+  return {bg:"hsl("+Math.round(84-76*k)+","+Math.round(22+78*k)+"%,"+Math.round(76-18*k)+"%)",glow:k>.35?"0 0 "+Math.round(4+22*k)+"px hsla("+Math.round(84-76*k)+",100%,58%,"+(.25+.5*k).toFixed(2)+")":"none",k:k}}
+function tone(s){return heat(s).bg}
+
+var clubs={};
+function prep(p){
+  p.lg=p.lg||"Premier League";p.h=p.h||[];
+  p.g=Math.max(1,Math.round(p.w*0.95));
+  p.imp10=10*(1-Math.exp(-(p.imp*p.g)/6));
+  p.rec=p.h.some(function(x){return x.i===p.inj});
+  if(!p.f&&FLAG[p.nat])p.f=FLAG[p.nat];
+  var pay=p.lg==="Premier League"?(PAY[p.n]||[null,null,null]):[null,null,null];if(p.wage==null)p.wage=pay[0]==null?null:pay[0]*1000;if(p.end==null)p.end=pay[1];p.src=p.src||pay[2];
+  p.left=p.end?Math.max(0,(new Date(p.end,5,30)-NOW)/6048e5):0;p.lost=p.wage?p.wage*p.w:0;
+  return p;
+}
+DATA.forEach(function(p){
+  prep(p);
+  var c=clubs[p.c]=clubs[p.c]||{n:0,s:0,list:[]};c.n++;c.s+=p.imp10;c.list.push(p);
+});
+LOWER.forEach(function(p){DATA.push(prep(p))});
+var playing={};FIX.forEach(function(f){playing[f.h]=f;playing[f.a]=f});
+var names=Object.keys(clubs).filter(function(c){return playing[c]}).sort(function(a,b){return clubs[b].s-clubs[a].s});
+
+/* Hero */
+var top=names[0],tc=clubs[top],opp=playing[top].h===top?playing[top].a:playing[top].h,hero=$("hero");
+hero.appendChild(el("h2","","Most impacted team of the weekend"));
+var nm=el("div","name");nm.appendChild(el("span","",top));hero.appendChild(nm);
+hero.appendChild(el("div","big mono",tc.s.toFixed(1)));
+hero.appendChild(el("p","",tc.n+" players out or doubtful. Combined injury score, against "+opp+" ("+playing[top].t+")."));
+var row=el("ul","chips");
+tc.list.sort(function(a,b){return b.imp10-a.imp10}).forEach(function(p){row.appendChild(el("li",p.st==="Out"?"out":"",p.n+" ("+p.st.toLowerCase()+")"))});
+hero.appendChild(row);
+
+/* Rankings */
+function rank(id,key,fmt,list){
+  var ul=$(id),max=Math.max.apply(null,list.map(function(c){return clubs[c][key]}))||1,bars=[];
+  list.slice(0,6).forEach(function(c){
+    var li=el("li"),bar=el("span","bar"),i=el("i");bars.push([i,clubs[c][key]/max*100]);bar.appendChild(i);
+    li.appendChild(el("span","nm",c));li.appendChild(bar);li.appendChild(el("span","v mono",fmt(clubs[c][key])));ul.appendChild(li);
+  });
+  requestAnimationFrame(function(){requestAnimationFrame(function(){bars.forEach(function(b){b[0].style.width=b[1]+"%"})})});
+}
+rank("most","n",function(v){return v+" out"},names.slice().sort(function(a,b){return clubs[b].n-clubs[a].n||clubs[b].s-clubs[a].s}));
+rank("worst","s",function(v){return v.toFixed(1)+" pts"},names);
+
+/* Fixtures */
+FIX.forEach(function(f){
+  var li=el("li"),t=el("div","t");t.appendChild(el("span","",f.h+" v "+f.a));t.appendChild(el("em","",f.t));li.appendChild(t);
+  function side(c){var x=clubs[c];return c+": "+(x?x.n+" out, score "+x.s.toFixed(1):"no injuries listed")}
+  var m=el("div","m");m.appendChild(el("span","",side(f.h)));m.appendChild(el("span","",side(f.a)));li.appendChild(m);
+  var pb=el("div","pb");pb.setAttribute("role","img");pb.setAttribute("aria-label","Win chances: "+f.h+" "+f.p[0]+"%, draw "+f.p[1]+"%, "+f.a+" "+f.p[2]+"%");
+  [["var(--a)",f.p[0]],["var(--mut)",f.p[1]],["var(--b)",f.p[2]]].forEach(function(s,k){var i=el("i");i.style.cssText="background:"+s[0]+";width:"+s[1]+"%"+(k===1?";opacity:.45":"");pb.appendChild(i)});
+  li.appendChild(pb);li.appendChild(el("div","m",f.h+" "+f.p[0]+"% \u00B7 draw "+f.p[1]+"% \u00B7 "+f.a+" "+f.p[2]+"%"));
+  $("fx").appendChild(li);
+});
+
+/* Player list */
+var fc=$("fc");
+function fillClubs(){
+  fc.innerHTML="";fc.appendChild(new Option("All clubs","all"));
+  var seen={};DATA.forEach(function(p){if(p.lg===curLg)seen[p.c]=1});
+  Object.keys(seen).sort().forEach(function(c){fc.appendChild(new Option(c,c))});
+}
+function fillSorts(){
+  var so=$("so"),prev=so.value,o=[["impact","Highest injury score"],["weeks","Longest out"]];
+  if(curLg==="Premier League")o.push(["wage","Highest wage"],["lost","Most wages lost"],["age","Oldest"]);
+  o.push(["name","Name"]);
+  so.textContent="";o.forEach(function(x){so.appendChild(new Option(x[1],x[0]))});
+  so.value=o.some(function(x){return x[0]===prev})?prev:"impact";
+}
+function drawTabs(){
+  var t=$("tabs");t.innerHTML="";
+  LEAGUES.forEach(function(l){
+    var n=DATA.filter(function(p){return p.lg===l}).length,b=el("button","",l+" ("+n+")");
+    b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",l===curLg?"true":"false");
+    b.addEventListener("click",function(){curLg=l;drawTabs();fillClubs();fillSorts();render();
+      Array.prototype.forEach.call(document.querySelectorAll(".pl"),function(x){x.hidden=l!=="Premier League"})});
+    t.appendChild(b);
+  });
+}
+function fact(b,v,l){var d=el("div");d.appendChild(el("b","",v));d.appendChild(el("span","",l));b.appendChild(d)}
+function tracker(p){
+  if(!p.wage){var nb=el("div","trk");nb.appendChild(el("h3","","Contract value left"));nb.appendChild(el("p","","No reliable wage is published for "+p.n+" yet, so the weekly value chart is not shown. "+(p.end?"Contract is reported to run to "+p.end+".":"")));return nb}
+  var box=el("div","trk"),n=Math.min(12,Math.ceil(p.w)),full=p.wage*p.left||1,cols=el("div","cols"),lab=el("div","lab"),i,rem;
+  box.appendChild(el("h3","","Contract value left, week by week out"));
+  var after=Math.max(0,p.wage*(p.left-p.w)),share=p.left?Math.min(100,p.w/p.left*100):100;
+  box.appendChild(el("p","",gbp(p.wage*p.left)+" now, "+gbp(after)+" after "+p.w+" wk"+(p.w===1?"":"s")+" out. He is paid about "+gbp(p.lost)+" while sidelined, "+share.toFixed(0)+"% of his remaining contract."));
+  for(i=0;i<=n;i++){
+    rem=p.wage*Math.max(0,p.left-i);
+    var c=el("span"),b=el("i");b.style.height=Math.max(2,rem/full*100)+"%";c.title=(i?"After week "+i+": ":"Now: ")+gbp(rem);c.appendChild(b);cols.appendChild(c);
+    lab.appendChild(el("span","",i?"W"+i:"Now"));
+  }
+  cols.setAttribute("role","img");cols.setAttribute("aria-label","Contract value left falls from "+gbp(p.wage*p.left)+" to "+gbp(after)+" over "+p.w+" weeks out");
+  box.appendChild(cols);box.appendChild(lab);
+  if(p.w>12)box.appendChild(el("p","","Chart shows the first 12 weeks."));
+  return box;
+}
+function card(p,showLg){
+  var pl=p.lg==="Premier League";
+  var d=el("details","p"),s=el("summary"),l=el("div"),n=el("div","n",p.n);
+  if(p.rec)n.appendChild(el("span","pill","Recurring"));
+  l.appendChild(n);
+  l.appendChild(el("div","meta",p.c+(showLg?" ("+p.lg+")":"")+" • "+(p.nat==="n/a"?"nationality n/a":p.f+" "+p.nat)+(p.age?" • age "+p.age:"")));
+  l.appendChild(el("div","meta",p.inj));
+  if(pl){var pm=el("div","meta pay");pm.appendChild(el("b","",p.wage?money(p.wage/1000)+"/wk":"Wage n/a"));pm.appendChild(document.createTextNode((p.wage?" (est.)":"")+" • "+(p.end?"contract to "+p.end:"contract n/a")));l.appendChild(pm)}
+  l.appendChild(el("div","meta",p.st+" • about "+p.w+" wk"+(p.w===1?"":"s")+(p.est?" (est.)":"")));
+  var sc=el("div","score mono",p.imp10.toFixed(1));var ht=heat(p.imp10);sc.style.background=ht.bg;sc.style.boxShadow=ht.glow;if(ht.k>.5)d.classList.add("hot");sc.appendChild(el("small","","INJURY SCORE"));
+  sc.setAttribute("aria-label","Injury score "+p.imp10.toFixed(1)+" out of 10");
+  s.appendChild(l);s.appendChild(sc);s.appendChild(el("span","chev"));d.appendChild(s);
+  /* The expanded body is built the first time the card is opened, so the list renders and taps respond instantly. */
+  var built=false;
+  s.addEventListener("click",function(){
+    if(built)return;built=true;
+    var b=el("div","body"),fa=el("div","facts");
+    if(pl||p.age)fact(fa,p.age?p.age+" yrs":"n/a","Age");fact(fa,p.nat==="n/a"?"n/a":p.f+" "+p.nat,"Nationality");fact(fa,p.imp10.toFixed(1)+" / 10","Injury score");
+    if(pl){fact(fa,p.wage?money(p.wage/1000)+" / week (est.)":"Not reported","Wage"+(p.src?" • "+p.src:""));fact(fa,p.end?"to "+p.end+" ("+(p.left/52).toFixed(1)+" yrs left)":"n/a","Contract")}
+    b.appendChild(fa);
+    if(p.note)b.appendChild(el("div","meta","Note: "+p.note));
+    if(p.nv)b.appendChild(el("div","meta","Nationality from memory, not confirmed against a source. Please check."));
+    if(p.imp===.5&&p.age==null&&pl)b.appendChild(el("div","meta","Injury score uses a default importance of 0.5 until an importance rating is added."));
+    if(!pl)b.appendChild(el("div","meta","Injury score uses a default importance of 0.5. Return time is an estimate from the club or news report."));
+    if(pl){b.appendChild(tracker(p));var ub=el("button","use","Open in impact calculator");ub.type="button";ub.addEventListener("click",function(e){e.preventDefault();useInCalc(p)});b.appendChild(ub)}
+    b.appendChild(el("div","",p.h.length?"Previous injuries ("+p.h.length+")":"No major previous injuries recorded here."));
+    if(p.h.length){var u=el("ul","tags");p.h.forEach(function(x){u.appendChild(el("li",x.i===p.inj?"rec":"",x.i+" • "+x.y))});b.appendChild(u)}
+    d.appendChild(b);
+  });
+  return d;
+}
+var sorts={impact:function(a,b){return b.imp10-a.imp10},weeks:function(a,b){return b.w-a.w},age:function(a,b){return (b.age||0)-(a.age||0)},name:function(a,b){return a.n.localeCompare(b.n)},wage:function(a,b){return (b.wage||0)-(a.wage||0)},lost:function(a,b){return b.lost-a.lost}};
+function norm(x){return x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+/* Search: every word must start a word in the player's name, club (and its nickname), injury, country, league or status.
+   It searches all four leagues at once. If nothing matches that way it falls back to matching inside words. */
+var ALIAS={"Manchester City":"man city","Manchester United":"man utd man united","Tottenham":"spurs tottenham hotspur","Wolverhampton Wanderers":"wolves","Nottingham Forest":"forest nottm","Newcastle United":"newcastle toon","Brighton":"brighton and hove albion","Bournemouth":"afc bournemouth","West Ham United":"west ham hammers","Sheffield United":"sheff utd blades","Queens Park Rangers":"qpr","West Bromwich Albion":"west brom wba","Birmingham City":"birmingham blues","Preston North End":"preston pne","Hull City":"hull tigers","Leeds United":"leeds","Aston Villa":"villa avfc","Crystal Palace":"palace","Ipswich Town":"ipswich tractor boys","Sunderland":"sunderland black cats","Wrexham":"wrexham","Derby County":"derby rams"};
+function squash(x){return x.replace(/[^a-z0-9\s]/g,"")}
+function hayOf(p){
+  if(p._h)return p._h;
+  var h=norm(p.n+" "+p.inj+" "+p.c+" "+(ALIAS[p.c]||"")+" "+p.nat+" "+p.lg+" "+(p.st==="Out"?"out":"doubt doubtful"));
+  h=h+" "+squash(h);
+  return p._h={h:h,t:h.split(/[^a-z0-9]+/).filter(Boolean)};
+}
+function hits(p,ws,inside){
+  var x=hayOf(p);
+  return ws.every(function(w){return inside?x.h.indexOf(w)>-1:x.t.some(function(t){return t.indexOf(w)===0})});
+}
+function nameHits(p,ws){var t=squash(norm(p.n)).split(/\s+/);return ws.every(function(w){return t.some(function(x){return x.indexOf(w)===0})})}
+function render(){
+  var raw=$("q").value.trim(),q=squash(norm(raw)).replace(/\s+/g," ").trim(),ws=q?q.split(" "):[],searching=ws.length>0,c=fc.value;
+  var pool=searching?DATA:DATA.filter(function(p){return p.lg===curLg});
+  var rows;
+  if(searching){
+    rows=pool.filter(function(p){return hits(p,ws,false)});
+    if(!rows.length)rows=pool.filter(function(p){return hits(p,ws,true)});
+  }else rows=pool.filter(function(p){return c==="all"||p.c===c});
+  rows.sort(sorts[$("so").value]);
+  if(searching)rows=rows.filter(function(p){return nameHits(p,ws)}).concat(rows.filter(function(p){return !nameHits(p,ws)}));
+  fc.disabled=searching;
+  $("qx").hidden=!$("q").value;
+  $("count").textContent=searching?"Showing "+rows.length+" of "+DATA.length+" players across all leagues for “"+raw+"”":"Showing "+rows.length+" of "+pool.length+" "+curLg+" players";
+  var ul=$("list"),fr=document.createDocumentFragment();
+  rows.forEach(function(p){var li=el("li");li.appendChild(card(p,searching));fr.appendChild(li)});
+  ul.textContent="";ul.appendChild(fr);
+  $("empty").hidden=rows.length>0;
+  $("empty").textContent=searching?"No players match. Try a surname, club, injury or country.":(pool.length?"No players match.":"No "+curLg+" injuries found yet.");
+}
+var qt=0;
+$("q").addEventListener("input",function(){clearTimeout(qt);$("qx").hidden=!$("q").value;qt=setTimeout(render,100)});
+$("fc").addEventListener("change",render);$("so").addEventListener("change",render);
+$("qx").addEventListener("click",function(){$("q").value="";render();$("q").focus()});
+$("q").addEventListener("keydown",function(e){if(e.key==="Escape"){$("q").value="";render()}else if(e.key==="Enter"){clearTimeout(qt);render();$("q").blur()}});
+document.addEventListener("keydown",function(e){if(e.key==="/"&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!$("v-inj").hidden){e.preventDefault();$("q").focus()}});
+var SEED={"as_of":"2026-10-22","table_note":"League table after 7 games each, as of 20 Oct 2026 (Sky Sports and Tribuna). Matches on 24 Oct are not included yet.","table":[["Manchester City",7,7,0,0,19,7],["Arsenal",7,6,0,1,11,5],["Brighton",7,5,1,1,23,5],["Chelsea",7,4,1,2,17,13],["Liverpool",7,3,3,1,9,8],["Brentford",7,2,4,1,13,8],["Leeds United",7,2,4,1,9,6],["Everton",7,2,4,1,8,7],["Hull City",7,2,3,2,8,7],["Ipswich Town",7,3,0,4,11,15],["Newcastle United",7,2,2,3,10,14],["Aston Villa",7,2,2,3,7,11],["Manchester United",7,1,4,2,10,10],["Crystal Palace",7,2,1,4,9,17],["Bournemouth",7,1,3,3,9,13],["Tottenham Hotspur",7,1,3,3,6,10],["Coventry City",7,2,0,5,6,14],["Fulham",7,1,2,4,7,10],["Nottingham Forest",7,1,2,4,5,9],["Sunderland",7,1,1,5,6,14]],"fixtures":[["Sat 24 Oct",[["Arsenal","Everton"],["Aston Villa","Manchester City"],["Chelsea","Tottenham Hotspur"],["Coventry City","Fulham"],["Crystal Palace","Newcastle United"],["Hull City","Brentford"],["Ipswich Town","Nottingham Forest"],["Liverpool","Brighton"],["Manchester United","Bournemouth"],["Sunderland","Leeds United"]]],["Sat 31 Oct",[["Bournemouth","Leeds United"],["Aston Villa","Fulham"],["Brentford","Nottingham Forest"],["Chelsea","Manchester United"],["Coventry City","Sunderland"],["Hull City","Ipswich Town"],["Manchester City","Brighton"],["Tottenham Hotspur","Crystal Palace"],["Liverpool","Arsenal"],["Newcastle United","Everton"]]]],"managers":{"Arsenal":"Mikel Arteta","Aston Villa":"Unai Emery","Bournemouth":"Marco Rose","Brentford":"Keith Andrews","Brighton":"Fabian Hurzeler","Chelsea":"Xabi Alonso","Coventry City":"Frank Lampard","Crystal Palace":"Pierre Sage","Everton":"David Moyes","Fulham":"Álvaro Arbeloa","Hull City":"Sergej Jakirovic","Ipswich Town":"Gary O'Neil","Leeds United":"Daniel Farke","Liverpool":"Andoni Iraola","Manchester City":"Enzo Maresca","Manchester United":"Michael Carrick","Newcastle United":"Matthias Jaissle","Nottingham Forest":"Oliver Glasner","Sunderland":"Régis Le Bris","Tottenham Hotspur":"Roberto De Zerbi"},"managers_note":"Managers from the Premier League's 2026/27 list. Check for changes after 22 Oct.","engine":{"version":"v1.0","scale_max":10,"neutral_difficulty":0.5,"weights":{"minutes_share":0.4,"goal_contribution_share":0.3,"replacement_gap":0.2,"fixture_difficulty":0.1}}};
+
+/* ============ Impact calculator, injury-prone points, league table ============ */
+var KMON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var KINJ=[["Minor knock",0,1],["Concussion",1,2],["Ankle ligament sprain",2,6],["Calf strain",2,5],["Thigh strain",2,4],["Hamstring strain",3,8],["Groin injury",3,8],["Knee ligament (MCL)",4,8],["Shoulder dislocation",4,8],["Broken metatarsal",6,10],["Broken leg",16,30],["Torn ACL",34,44],["Torn Achilles",36,48],["Cold or flu",0,1],["Illness (virus, stomach bug)",0,2]].sort(function(a,b){return a[2]-b[2]||a[1]-b[1]||(a[0]<b[0]?-1:1)});
+var KMAP=[[/hamstring/,"Hamstring strain"],[/calf/,"Calf strain"],[/thigh|quad/,"Thigh strain"],[/groin/,"Groin injury"],[/ankle/,"Ankle ligament sprain"],[/illness|virus/,"Illness (virus, stomach bug)"],[/\bflu\b|\bcold\b/,"Cold or flu"],[/\bacl\b|cruciate/,"Torn ACL"],[/achilles/,"Torn Achilles"],[/concussion/,"Concussion"],[/fracture|broken/,"Broken metatarsal"]];
+var KLOAD=6048e5,ksel=null,kauto=false,kkind="mid";
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function ktoday(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())}
+function kdate(l){var m=/(\d+)\s+([A-Za-z]{3})/.exec(l),y=+SEED.as_of.slice(0,4),mo=KMON.indexOf(m[2]);if(mo<+SEED.as_of.slice(5,7)-7)y++;return new Date(y,mo,+m[1])}
+function kfmt(d){return d.getDate()+" "+KMON[d.getMonth()]+(d.getFullYear()!==ktoday().getFullYear()?" "+d.getFullYear():"")}
+function kord(n){return n+(n%100>10&&n%100<14?"th":["th","st","nd","rd"][n%10]||"th")}
+function kclamp(x){return Math.max(0,Math.min(1,x))}
+function kfix(t){var out=[];SEED.fixtures.forEach(function(r){var d=kdate(r[0]);r[1].forEach(function(m){if(m[0]===t)out.push({d:r[0],dt:d,opp:m[1],home:true});if(m[1]===t)out.push({d:r[0],dt:d,opp:m[0],home:false})})});return out}
+function kstanding(){return SEED.table.map(function(r){return {n:r[0],p:r[1],w:r[2],d:r[3],l:r[4],gd:r[5]-r[6],pts:r[2]*3+r[3],gf:r[5]}}).sort(function(a,b){return b.pts-a.pts||b.gd-a.gd})}
+function kstrength(){var rows=kstanding(),s={};rows.forEach(function(r,i){s[r.n]=1-i/(rows.length-1)});return s}
+function khue(score10){return heat(score10)}
+function kpaint(node,score10){var h=heat(score10);node.style.background=h.bg;node.style.boxShadow=h.glow}
+function kpill(node,text,score10){node.textContent=text;node.style.background=heat(score10).bg}
+
+function krenderTable(team){
+  var rows=kstanding();
+  $("ktbl").tBodies[0].innerHTML=rows.map(function(r,i){
+    var c=clubs[r.n],cls=(r.n===team?"on ":"")+(i<4?"top":i>=rows.length-3?"bot":"");
+    return '<tr class="'+cls+'"><td>'+(i+1)+"</td><td>"+esc(r.n)+"</td><td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td><td>"+(r.gd>0?"+":"")+r.gd+"</td><td>"+r.pts+"</td><td>"+(c?c.n:0)+"</td></tr>";
+  }).join("");
+  $("ktblnote").textContent=SEED.table_note;
+  var i=rows.map(function(r){return r.n}).indexOf(team);return {pos:i+1,pts:rows[i].pts};
+}
+function krenderTypes(){
+  var G=[["g-short","Short term: up to 3 weeks",function(j){return j[2]<=3}],["g-mid","Medium term: 4 to 10 weeks",function(j){return j[2]>3&&j[2]<=10}],["g-long","Severe: over 10 weeks",function(j){return j[2]>10}]];
+  $("kinjlist").innerHTML=G.map(function(g){
+    return '<div class="grp '+g[0]+'"><h3>'+g[1]+"</h3>"+KINJ.map(function(j,i){return [j,i]}).filter(function(x){return g[2](x[0])}).map(function(x){
+      return '<button type="button" data-i="'+x[1]+'"><span>'+esc(x[0][0])+"</span><em>"+(x[0][2]<=1?"up to 1 wk":x[0][1]+"–"+x[0][2]+" wks")+"</em></button>";
+    }).join("")+"</div>";
+  }).join("");
+}
+function krow(a,b){return '<div class="krow"><span>'+a+'</span><span class="d">'+b+"</span></div>"}
+function kupdate(){
+  var E=SEED.engine,W=E.weights,team=$("kteam").value,rating=+$("kimp").value/10,name=$("kplayer").value.trim(),who=name||"The player",fx=kfix(team).filter(function(f){return f.dt>=ktoday()});
+  $("kimpv").textContent=$("kimp").value+" / 10";
+  var j=KINJ[+$("kinj").value],games,weeksText,kind,note,win,tdy=ktoday();
+  if(ksel){
+    win=ksel.w;var back=new Date(tdy.getTime()+ksel.w*KLOAD);
+    games=fx.filter(function(f){return f.dt<back}).length;
+    if(fx.length&&fx[fx.length-1].dt<back)games+=Math.round((back-fx[fx.length-1].dt)/KLOAD);
+    if(!fx.length)games=Math.round(win);
+    weeksText=(ksel.est?"Back about ":"Back ")+kfmt(back);kind=win<=3?"short":win<=10?"mid":"long";
+    note="Based on the tracker's "+(ksel.est?"estimated":"reported")+" return ("+kfmt(back)+").";
+  }else{
+    games=Math.min(38,Math.max(1,Math.round((j[1]+j[2])/2)));win=j[2];
+    weeksText=j[2]<=1?"Up to 1 week":j[1]+"–"+j[2]+" weeks";kind=j[2]<=3?"short":j[2]<=10?"mid":"long";
+    note="Typical range for a "+j[0].toLowerCase()+".";
+  }
+  kkind=kind;
+  kpill($("kstatus"),kind==="short"?"Short absence":kind==="long"?"Long absence":"Mid-range absence",kind==="short"?2:kind==="long"?9:5);
+  $("kweeks").textContent=weeksText;
+  var t=krenderTable(team);
+  $("kwho").textContent=(name?name+", ":"")+team+" ("+kord(t.pos)+", "+t.pts+" pts). Manager: "+(SEED.managers[team]||"unknown");
+  var row=SEED.table.filter(function(r){return r[0]===team})[0],teamMins=row[1]*90,teamGoals=row[5];
+  var mins=parseFloat($("kmins").value),ga=parseFloat($("kga").value),limited=!(mins>0&&teamMins>0),noGa=!(ga>=0);
+  var ms=limited?0:kclamp(mins/teamMins),gs=noGa||teamGoals<=0?0:kclamp(ga/teamGoals);
+  var S=kstrength(),used=[],end=new Date(tdy.getTime()+(win||0)*KLOAD);
+  if(win>0)fx.forEach(function(f){if(f.dt>tdy&&f.dt<=end&&S[f.opp]!=null)used.push(f.home?Math.max(0,S[f.opp]-.1):Math.min(1,S[f.opp]+.1))});
+  var diff=used.length?used.reduce(function(a,b){return a+b},0)/used.length:E.neutral_difficulty;
+  var score=kclamp(W.minutes_share*ms+W.goal_contribution_share*gs+W.replacement_gap*rating+W.fixture_difficulty*diff)*E.scale_max;
+  var pct=function(x){return Math.round(x*100)+"%"};
+  $("kparts").innerHTML='<p class="kh">How the score is built</p>'+
+    krow("Minutes share",(limited?"no data":pct(ms))+" × "+W.minutes_share)+krow("Goals + assists share",(noGa?"no data":pct(gs))+" × "+W.goal_contribution_share)+
+    krow("Replacement gap",pct(rating)+" × "+W.replacement_gap)+krow("Fixture difficulty",pct(diff)+(used.length?"":" (neutral)")+" × "+W.fixture_difficulty)+
+    (limited||noGa?'<p class="knote">Low confidence: add minutes played and goals + assists for a full score. Missing numbers count as zero.</p>':"");
+  $("kscorev").textContent=score.toFixed(1);kpaint($("kscore"),score);$("kscore").setAttribute("aria-label","Impact Score "+score.toFixed(1)+" out of "+E.scale_max);
+  $("kgames").textContent=games;$("kpct").textContent=Math.round(games/38*100)+"%";
+  $("kfill").style.width=Math.max(4,games/38*100)+"%";$("kfill").style.background=heat(Math.min(10,games/38*30)).bg;
+  $("ksum").textContent=note+" "+who+" would miss about "+games+" league "+(games===1?"game":"games")+" ("+Math.round(games/38*100)+"% of the season). Impact Score "+score.toFixed(1)+" out of "+E.scale_max+".";
+  var h='<p class="kh">Next fixtures</p>';
+  if(!fx.length)h+='<p class="knote">No fixtures loaded for this club yet.</p>';
+  fx.forEach(function(f,i){h+='<div class="krow"><span><span class="d">'+esc(f.d)+"</span> "+(f.home?"v ":"at ")+esc(f.opp)+"</span>"+(i<games?'<span class="kout">'+esc(name?name.split(" ").pop():"Misses")+" out</span>":"")+"</div>"});
+  if(games>fx.length)h+='<p class="knote">'+(games-fx.length)+" more missed "+(games-fx.length===1?"game falls":"games fall")+" beyond the fixtures loaded here.</p>";
+  $("kmissed").innerHTML=h;
+  kprone();
+}
+function kprone(){
+  var inj=Math.max(0,+$("kpi").value||0),gm=Math.max(0,+$("kpg").value||0),age=+$("kpa").value||0,rep=$("kpr").checked;
+  var cur={short:3,mid:6,long:10}[kkind]||5,f=Math.min(35,inj*7),g=Math.min(30,gm),r=rep?15:0,a=age>=32?10:age>=30?7:age>=28?3:0;
+  var total=Math.min(100,f+g+r+a+cur),band=total>=75?"Very high":total>=50?"High":total>=25?"Moderate":"Low",name=$("kplayer").value.trim();
+  kpill($("kpband"),band,total/10);
+  $("kpwho").textContent=(name||"The player")+", "+$("kteam").value;
+  $("kpscorev").textContent=total;kpaint($("kpscore"),total/10);$("kpscore").setAttribute("aria-label","Injury-prone points "+total+" out of 100");
+  $("kpfill").style.width=total+"%";$("kpfill").style.background=heat(total/10).bg;
+  $("kpsum").textContent=(inj||gm||age||rep)?"Injury-prone points: "+total+" out of 100 ("+band.toLowerCase()+").":"Only the current absence is counted so far. Add injury history above for a full score.";
+  $("kpparts").innerHTML='<p class="kh">How the points add up</p>'+[["Injuries in last 2 seasons (7 each, max 35)",f,35],["Games missed last season (1 each, max 30)",g,30],["Same injury before",r,15],["Age (28+ adds points, max 10)",a,10],["Current absence ("+(kkind==="mid"?"3 to 10 weeks":kkind==="short"?"short":"long")+")",cur,10]].map(function(x){return krow(x[0],x[1]+" / "+x[2])}).join("");
+}
+function kpick(p){
+  ksel=p;kauto=true;
+  if(SEED.table.some(function(r){return r[0]===p.c}))$("kteam").value=p.c;
+  var t=norm(p.inj),i;for(i=0;i<KMAP.length;i++)if(KMAP[i][0].test(t)){$("kinj").value=KINJ.map(function(x){return x[0]}).indexOf(KMAP[i][1]);break}
+}
+function useInCalc(p){
+  showView("calc");$("kplayer").value=p.n;kpick(p);$("kmins").value="";$("kga").value="";kupdate();
+  window.scrollTo({top:0});
+}
+function showView(v){
+  ["inj","calc","table"].forEach(function(x){$("v-"+x).hidden=x!==v});
+  Array.prototype.forEach.call(document.querySelectorAll("#views button"),function(b){b.setAttribute("aria-selected",b.getAttribute("data-v")===v?"true":"false")});
+  try{history.replaceState(null,"",v==="inj"?location.pathname+location.search:"#"+v)}catch(e){}
+}
+function kinit(){
+  SEED.table.map(function(r){return r[0]}).sort().forEach(function(c){$("kteam").add(new Option(c,c))});
+  KINJ.forEach(function(j,i){$("kinj").add(new Option(j[0],i))});
+  $("kteam").value="Arsenal";$("kinj").value=KINJ.map(function(x){return x[0]}).indexOf("Hamstring strain");
+  var seen={},dl=$("kplist");
+  DATA.filter(function(p){return p.lg==="Premier League"}).forEach(function(p){if(!seen[p.n]){seen[p.n]=1;var o=document.createElement("option");o.value=p.n;o.label=p.c;dl.appendChild(o)}});
+  krenderTypes();
+  ["kmins","kga","kimp"].forEach(function(id){$(id).addEventListener("input",kupdate)});
+  $("kteam").addEventListener("input",function(){if(ksel&&ksel.c!==$("kteam").value)ksel=null;kupdate()});
+  $("kinj").addEventListener("input",function(){ksel=null;kauto=false;kupdate()});
+  $("kplayer").addEventListener("input",function(){
+    var v=squash(norm($("kplayer").value.trim())),hit=null;
+    if(v)DATA.some(function(p){if(p.lg==="Premier League"&&squash(norm(p.n))===v){hit=p;return true}});
+    if(hit)kpick(hit);else if(ksel){ksel=null;kauto=false}
+    kupdate();
+  });
+  ["kpi","kpg","kpa"].forEach(function(id){$(id).addEventListener("input",kprone)});$("kpr").addEventListener("change",kprone);
+  $("kinjlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;ksel=null;kauto=false;$("kinj").value=b.getAttribute("data-i");kupdate();$("kform").scrollIntoView({block:"start"})});
+  Array.prototype.forEach.call(document.querySelectorAll("#views button"),function(b){b.addEventListener("click",function(){showView(b.getAttribute("data-v"));window.scrollTo({top:0})})});
+  kupdate();
+  var hv=location.hash.replace("#","");if(hv==="calc"||hv==="table")showView(hv);
+}
+drawTabs();fillClubs();fillSorts();
+render();
+kinit();
+})();
+</script>
+</body>
+</html>
